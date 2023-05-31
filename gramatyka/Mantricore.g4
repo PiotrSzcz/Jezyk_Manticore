@@ -1,52 +1,65 @@
 grammar Mantricore;
 
-start: program EOF ;
+start: ( program? NEWLINE )* EOF;
 
-program: statement+ ;
-
-statement: assignment
-         | inputStatement
-         | outputStatement
-         | errorStatement ;
-
-assignment: ID '=' expression ';' ;
-
-inputStatement: 'read' '(' ID ')' ';' ;
-
-outputStatement: 'print' '(' expression ')' ';' ;
-
-errorStatement: 'ERROR:' STRING ';' ;
+program:  PRINT '(' ID ')'              #printId
+          | PRINT '(' expression ')'    #printExp
+          | READ '(' ID ')'             #readId
+          | ID ASSIGN expression        #assignExpr
+;
 
 expression: logicalExpression ;
 
-logicalExpression: arithmeticExpression
-                 | logicalExpression '&&' logicalExpression
-                 | logicalExpression '||' logicalExpression
-                 | '!' logicalExpression ;
+logicalExpression: arithmeticExpression                         #logical
+                 | logicalExpression '&&' logicalExpression     #and
+                 | logicalExpression '||' logicalExpression     #or
+                 | '!' logicalExpression                        #not
+;
 
-arithmeticExpression: term
-                     | arithmeticExpression '+' term
-                     | arithmeticExpression '-' term ;
+arithmeticExpression: term                                      #arithmetic
+                     | arithmeticExpression '+' term            #add
+                     | arithmeticExpression '-' term            #subt
+;
 
-term: value
-     | term '*' value
-     | term '/' value ;
+term: value             #termVal
+     | term '*' value   #mult
+     | term '/' value   #div
+;
 
-value: ID
-       | NUMBER
-       | STRING
-       | arrayAccess
-       | matrix
-       | '(' expression ')'
-       | '-' value
-       | 'true'
-       | 'false' ;
+value: ID           #id
+       | NUMBER     #number
+       | STRING     #string
+       | array      #arrayVal
+       | matrix     #matrixVal
+       | 'true'     #btrue
+       | 'false'    #bfals
+;
 
-arrayAccess: ID '[' expression ']' ;
+array: 'array' '[' expressionList ']';
 
-matrix: '[' matrixRow (',' matrixRow)* ']' ;
+matrix: 'matrix' '[' matrixRow (',' matrixRow)* ']';
 
-matrixRow: expression (',' expression)* ;
+matrixRow: '[' expressionList ']';
+
+expressionList: value (',' value)*;
+
+BEGIN:  '{';
+
+END:	'}';
+
+ASSIGN: '=';
+
+ADD: '+';
+
+SUBTRACT: '-';
+
+MULT: '*';
+
+DIVIDE: '/';
+
+PRINT: 'print';
+
+READ: 'read';
 
 NUMBER: INT | FLOAT ;
 
@@ -62,4 +75,6 @@ STRING: '"' (~["])* '"' ;
 
 ID: [a-zA-Z_][a-zA-Z0-9_]* ;
 
-WS: [ \t\r\n]+ -> skip ;
+NEWLINE: '\r'? '\n';
+
+WS: (' '|'\t')+ -> skip;
