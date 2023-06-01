@@ -114,17 +114,37 @@ public class LLVMActions extends MantricoreBaseListener {
 
     @Override
     public void exitNot(MantricoreParser.NotContext ctx) {
-        super.exitNot(ctx);
+        Value v1 = stack.pop();
+        if (VarType.INT.equals(v1.type)) {
+            LLVMGenerator.not_int(v1.name);
+            stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+        } else {
+            error(ctx.getStart().getLine(), "and operattion type not handled.");
+        }
     }
 
     @Override
     public void exitOr(MantricoreParser.OrContext ctx) {
-        super.exitOr(ctx);
+        Value v1 = stack.pop();
+        Value v2 = stack.pop();
+        if (VarType.INT.equals(v1.type)) {
+            LLVMGenerator.or_int(v1.name, v2.name);
+            stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+        } else {
+            error(ctx.getStart().getLine(), "or operattion type not handled.");
+        }
     }
 
     @Override
     public void exitAnd(MantricoreParser.AndContext ctx) {
-        super.exitAnd(ctx);
+        Value v1 = stack.pop();
+        Value v2 = stack.pop();
+        if (VarType.INT.equals(v1.type)) {
+            LLVMGenerator.and_int(v1.name, v2.name);
+            stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+        } else {
+            error(ctx.getStart().getLine(), "and operattion type not handled.");
+        }
     }
 
     @Override
@@ -224,11 +244,11 @@ public class LLVMActions extends MantricoreBaseListener {
 
         if( v1.type == v2.type && v1.precision == v2.precision ) {
             if( v1.type == VarType.INT ){
-                LLVMGenerator.mult_int(v1.name, v2.name);
+                LLVMGenerator.comp_int(v1.name, v2.name);
                 stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
             }
             if( v1.type == VarType.FLOAT ){
-                LLVMGenerator.mult_float(v1.name, v2.name, v1.precision.toString());
+                LLVMGenerator.comp_float(v1.name, v2.name, v1.precision.toString());
                 stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.FLOAT, v1.precision) );
             }
         } else {

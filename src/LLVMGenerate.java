@@ -31,8 +31,11 @@ class LLVMGenerator{
 
     static void assign_float(String id, String value, String precision) {
         if (precision.equals("FLOAT32")) {
-            float floatValue = Float.parseFloat(value);
-            String formattedValue = String.format("%.20f", floatValue).replace(",", ".");
+            String formattedValue = value;
+            if (!value.contains("%")){
+                float floatValue = Float.parseFloat(value);
+                formattedValue = String.format("%.20f", floatValue).replace(",", ".");
+            }
             buffer += "store float " + formattedValue + ", float* %" + id + "\n";
         } else if (precision.equals("FLOAT64")) {
             buffer += "store double " + value + ", double* %" + id + "\n";
@@ -147,27 +150,67 @@ class LLVMGenerator{
         reg++;
     }
 
-    static void comp_int(String id, String value){
-        buffer += "%"+reg+" = load i32, i32* %"+id+"\n";
+    static void comp_int(String val1, String val2){
+        buffer += "%"+reg+" = icmp eq i32 "+val1+", "+val2+"\n";
         reg++;
-        buffer += "%"+reg+" = icmp eq i32 %"+(reg-1)+", "+value+"\n";
+        buffer += "%"+reg+" = zext i1  %"+(reg-1)+" to i32\n";
         reg++;
     }
 
-    static void comp_float(String id, String value, String precision){
+    static void comp_float(String val1, String val2, String precision){
 
         if (precision.equals("FLOAT32")) {
-            buffer += "%" + reg + " = load float, double* %" + id + "\n";
+            float float1Value = Float.parseFloat(val1);
+            String formattedValue1 = String.format("%.20f", float1Value).replace(",", ".");
+            float float2Value = Float.parseFloat(val2);
+            String formattedValue2 = String.format("%.20f", float2Value).replace(",", ".");
+            buffer += "%"+reg+" = fcmp oeq float "+formattedValue1+", "+formattedValue2+"\n";
             reg++;
-            buffer += "%"+reg+" = fcmp oeq float %"+(reg-1)+", "+value+"\n";
+            buffer += "%"+reg+" = zext i1  %"+(reg-1)+" to i32\n";
+            reg++;
+            buffer += "%"+reg+" = sitofp i32  %"+(reg-1)+" to float\n";
             reg++;
         } else if (precision.equals("FLOAT64")) {
-            buffer += "%" + reg + " = load double, double* %" + id + "\n";
+            buffer += "%"+reg+" = fcmp ueq double "+val1+", "+val2+"\n";
             reg++;
-            buffer += "%"+reg+" = fcmp oeq double %"+(reg-1)+", "+value+"\n";
+            buffer += "%"+reg+" = zext i1  %"+(reg-1)+" to i32\n";
+            reg++;
+            buffer += "%"+reg+" = sitofp i32  %"+(reg-1)+" to double\n";
             reg++;
         }
     }
+
+    static void and_int(String val1, String val2){
+        buffer += "%"+reg+" = icmp ne i32 "+val1+", 0\n";
+        reg++;
+        buffer += "%"+reg+" = icmp ne i32 "+val2+", 0\n";
+        reg++;
+        buffer += "%"+reg+" = and i1 %"+(reg-1)+", %"+(reg-2)+"\n";
+        reg++;
+        buffer += "%"+reg+" = zext i1  %"+(reg-1)+" to i32\n";
+        reg++;
+    }
+
+    static void or_int(String val1, String val2) {
+        buffer += "%" + reg + " = icmp ne i32 " +val1+ ", 0\n";
+        reg++;
+        buffer += "%" + reg + " = icmp ne i32 " +val2+ ", 0\n";
+        reg++;
+        buffer += "%" + reg + " = or i1 %" + (reg-1) + ", %" + (reg-2) + "\n";
+        reg++;
+        buffer += "%" + reg + " = zext i1 %" + (reg-1) + " to i32\n";
+        reg++;
+    }
+
+    static void not_int(String val) {
+        buffer += "%" + reg + " = icmp eq i32 " + val + ", 0\n";
+        reg++;
+        buffer += "%" + reg + " = xor i1 %" + (reg-1) + ", true\n";
+        reg++;
+        buffer += "%" + reg + " = select i1 %" + (reg-1) + ", i32 0, i32 1\n";
+        reg++;
+    }
+
 
     static void close_main(){
         main_text += buffer;
