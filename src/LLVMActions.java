@@ -2,6 +2,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
@@ -24,13 +27,14 @@ class Value{
 
 public class LLVMActions extends MantricoreBaseListener {
 
+    private final String parameter;
+
+    public LLVMActions(String outputFileName) {
+        this.parameter = outputFileName;
+    }
+
     HashMap<String, Value> variables = new HashMap<String, Value>();
-    HashSet<String> functions = new HashSet<String>();
-    HashSet<String> localnames = new HashSet<String>();
-    HashSet<String> globalnames = new HashSet<String>();
     Stack<Value> stack = new Stack<Value>();
-    String value,function;
-    Boolean global = true;
 
     void error(int line, String msg){
         System.err.println("Error, line "+line+", "+msg);
@@ -45,7 +49,12 @@ public class LLVMActions extends MantricoreBaseListener {
     @Override
     public void exitStart(MantricoreParser.StartContext ctx) {
         LLVMGenerator.close_main();
-        System.out.println( LLVMGenerator.generate() );
+        try {
+            Files.writeString(Paths.get(parameter + ".ll"), LLVMGenerator.generate());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -207,6 +216,26 @@ public class LLVMActions extends MantricoreBaseListener {
             error(ctx.getStart().getLine(), "add operattion type mismatch.");
         }
     }
+
+    @Override
+    public void exitComp(MantricoreParser.CompContext ctx) {
+        Value v1 = stack.pop();
+        Value v2 = stack.pop();
+
+        if( v1.type == v2.type && v1.precision == v2.precision ) {
+            if( v1.type == VarType.INT ){
+                LLVMGenerator.mult_int(v1.name, v2.name);
+                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+            }
+            if( v1.type == VarType.FLOAT ){
+                LLVMGenerator.mult_float(v1.name, v2.name, v1.precision.toString());
+                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.FLOAT, v1.precision) );
+            }
+        } else {
+            error(ctx.getStart().getLine(), "add operattion type mismatch.");
+        }
+    }
+
 
     @Override
     public void exitId(MantricoreParser.IdContext ctx) {

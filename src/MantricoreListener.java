@@ -65,18 +65,6 @@ public interface MantricoreListener extends ParseTreeListener {
 	 */
 	void exitAssignExpr(MantricoreParser.AssignExprContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code assignVal}
-	 * labeled alternative in {@link MantricoreParser#program}.
-	 * @param ctx the parse tree
-	 */
-	void enterAssignVal(MantricoreParser.AssignValContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code assignVal}
-	 * labeled alternative in {@link MantricoreParser#program}.
-	 * @param ctx the parse tree
-	 */
-	void exitAssignVal(MantricoreParser.AssignValContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link MantricoreParser#expression}.
 	 * @param ctx the parse tree
 	 */
@@ -86,6 +74,18 @@ public interface MantricoreListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExpression(MantricoreParser.ExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code comp}
+	 * labeled alternative in {@link MantricoreParser#logicalExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterComp(MantricoreParser.CompContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code comp}
+	 * labeled alternative in {@link MantricoreParser#logicalExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitComp(MantricoreParser.CompContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code not}
 	 * labeled alternative in {@link MantricoreParser#logicalExpression}.
@@ -330,14 +330,4 @@ public interface MantricoreListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExpressionList(MantricoreParser.ExpressionListContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link MantricoreParser#equal}.
-	 * @param ctx the parse tree
-	 */
-	void enterEqual(MantricoreParser.EqualContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link MantricoreParser#equal}.
-	 * @param ctx the parse tree
-	 */
-	void exitEqual(MantricoreParser.EqualContext ctx);
 }

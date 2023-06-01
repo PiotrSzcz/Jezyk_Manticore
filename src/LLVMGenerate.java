@@ -51,7 +51,9 @@ class LLVMGenerator{
         if (precision.equals("FLOAT32")) {
             buffer += "%" + reg + " = load float, float* %" + id + "\n";
             reg++;
-            buffer += "%"+reg+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), float %"+(reg-1)+")\n";
+            buffer += "%" + reg + " = fpext float %" +(reg-1)+ " to double \n";
+            reg ++;
+            buffer += "%"+reg+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %"+(reg-1)+")\n";
             reg++;
         } else if (precision.equals("FLOAT64")) {
             buffer += "%" + reg + " = load double, double* %" + id + "\n";
@@ -90,63 +92,63 @@ class LLVMGenerator{
     }
 
     static void add_int(String val1, String val2){
-        main_text += "%"+reg+" = add i32 "+val1+", "+val2+"\n";
+        buffer += "%"+reg+" = add i32 "+val1+", "+val2+"\n";
         reg++;
     }
 
     static void add_float(String val1, String val2, String precision){
         if (precision.equals("FLOAT32")) {
-            main_text += "%"+reg+" = fadd float "+val1+", "+val2+"\n";
+            buffer += "%"+reg+" = fadd float "+val1+", "+val2+"\n";
         } else if (precision.equals("FLOAT64")) {
-            main_text += "%"+reg+" = fadd double "+val1+", "+val2+"\n";
+            buffer += "%"+reg+" = fadd double "+val1+", "+val2+"\n";
         }
         reg++;
     }
 
     static void sub_int(String val1, String val2){
-        main_text += "%"+reg+" = sub i32 "+val2+","+val1+"\n";
+        buffer += "%"+reg+" = sub i32 "+val1+", "+val2+"\n";
         reg++;
     }
 
     static void sub_float(String val1, String val2, String precision){
         if (precision.equals("FLOAT32")) {
-            main_text += "%"+reg+" = fsub float "+val2+", "+val1+"\n";
+            buffer += "%"+reg+" = fsub float "+val2+", "+val1+"\n";
         } else if (precision.equals("FLOAT64")) {
-            main_text += "%"+reg+" = fsub double "+val2+", "+val1+"\n";
+            buffer += "%"+reg+" = fsub double "+val2+", "+val1+"\n";
         }
         reg++;
     }
 
     static void mult_int(String val1, String val2){
-        main_text += "%"+reg+" = mul i32 "+val1+", "+val2+"\n";
+        buffer += "%"+reg+" = mul i32 "+val1+", "+val2+"\n";
         reg++;
     }
 
     static void mult_float(String val1, String val2, String precision){
         if (precision.equals("FLOAT32")) {
-            main_text += "%"+reg+" = fmul float "+val1+", "+val2+"\n";
+            buffer += "%"+reg+" = fmul float "+val1+", "+val2+"\n";
         } else if (precision.equals("FLOAT64")) {
-            main_text += "%"+reg+" = fmul double "+val1+", "+val2+"\n";
+            buffer += "%"+reg+" = fmul double "+val1+", "+val2+"\n";
         }
         reg++;
     }
 
     static void div_int(String val1, String val2){
-        main_text += "%"+reg+" = sdiv i32 "+val2+", "+val1+"\n";
+        buffer += "%"+reg+" = sdiv i32 "+val1+", "+val2+"\n";
         reg++;
     }
 
     static void div_float(String val1, String val2, String precision){
         if (precision.equals("FLOAT32")) {
-            main_text += "%"+reg+" = fdiv float "+val2+", "+val1+"\n";
+            buffer += "%"+reg+" = fdiv float "+val2+", "+val1+"\n";
         } else if (precision.equals("FLOAT64")) {
-            main_text += "%"+reg+" = fdiv double "+val2+", "+val1+"\n";
+            buffer += "%"+reg+" = fdiv double "+val2+", "+val1+"\n";
         }
         reg++;
     }
 
     static void comp_int(String id, String value){
-        main_text += "%"+reg+" = load i32, i32* %"+id+"\n";
+        buffer += "%"+reg+" = load i32, i32* %"+id+"\n";
         reg++;
         buffer += "%"+reg+" = icmp eq i32 %"+(reg-1)+", "+value+"\n";
         reg++;
@@ -165,16 +167,6 @@ class LLVMGenerator{
             buffer += "%"+reg+" = fcmp oeq double %"+(reg-1)+", "+value+"\n";
             reg++;
         }
-    }
-
-    private static void formatBuffer() {
-        String[] lines = buffer.split("\n");
-        StringBuilder sb = new StringBuilder();
-        sb.append(lines[0]).append("\n");
-        for (int i = 1; i < lines.length; i++) {
-            sb.append("  ").append(lines[i]).append("\n");
-        }
-        buffer = sb.toString();
     }
 
     static void close_main(){

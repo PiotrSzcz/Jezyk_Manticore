@@ -76,18 +76,6 @@ public class MantricoreBaseListener implements MantricoreListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAssignVal(MantricoreParser.AssignValContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAssignVal(MantricoreParser.AssignValContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterExpression(MantricoreParser.ExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -95,6 +83,18 @@ public class MantricoreBaseListener implements MantricoreListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExpression(MantricoreParser.ExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterComp(MantricoreParser.CompContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitComp(MantricoreParser.CompContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -347,18 +347,6 @@ public class MantricoreBaseListener implements MantricoreListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExpressionList(MantricoreParser.ExpressionListContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterEqual(MantricoreParser.EqualContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitEqual(MantricoreParser.EqualContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

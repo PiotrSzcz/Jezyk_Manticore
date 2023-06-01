@@ -13,6 +13,7 @@ expression: logicalExpression ;
 logicalExpression: arithmeticExpression                         #logical
                  | logicalExpression '&&' logicalExpression     #and
                  | logicalExpression '||' logicalExpression     #or
+                 | logicalExpression '==' logicalExpression     #comp
                  | '!' logicalExpression                        #not
 ;
 
