@@ -6,12 +6,7 @@ class LLVMGenerator{
     static String buffer = "";
     static int reg = 1;
 
-    static Stack<Integer> brstack = new Stack<Integer>();
-    static Stack<Double> brstack_double = new Stack<Double>();
 
-    static void call(String id) {
-        buffer += "call void @" + id + "()\n";
-    }
 
     static void declare_int(String id){
         buffer += "%"+id+" = alloca i32\n";
@@ -71,19 +66,6 @@ class LLVMGenerator{
         reg++;
     }
 
-    static void scantf_double(String id, String precision){
-        if (precision.equals("FLOAT32")) {
-            buffer += "%" + reg + " = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strsd, i32 0, i32 0), float* %" + id + ")\n";
-        } else if (precision.equals("FLOAT64")) {
-            buffer += "%" + reg + " = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strsd, i32 0, i32 0), double* %" + id + ")\n";
-        }
-        reg++;
-    }
-
-    static void load_int(String id){
-        buffer += "%" + reg + " = load i32, i32* %" + id + "\n";
-        reg++;
-    }
 
     static void load_float(String id, String precision){
         if (precision.equals("FLOAT32")) {

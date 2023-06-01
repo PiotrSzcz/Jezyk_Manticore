@@ -6,10 +6,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Stack;
 
-enum VarType{ INT, FLOAT, UNKNOWN }
+enum VarType{ INT, FLOAT }
 
 enum Precision{FLOAT32, FLOAT64, DM}
 
