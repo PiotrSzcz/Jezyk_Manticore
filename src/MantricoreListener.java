@@ -17,6 +17,52 @@ public interface MantricoreListener extends ParseTreeListener {
 	 */
 	void exitStart(MantricoreParser.StartContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link MantricoreParser#block}.
+	 * @param ctx the parse tree
+	 */
+	void enterBlock(MantricoreParser.BlockContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MantricoreParser#block}.
+	 * @param ctx the parse tree
+	 */
+	void exitBlock(MantricoreParser.BlockContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code if}
+	 * labeled alternative in {@link MantricoreParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void enterIf(MantricoreParser.IfContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code if}
+	 * labeled alternative in {@link MantricoreParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void exitIf(MantricoreParser.IfContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code loop}
+	 * labeled alternative in {@link MantricoreParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void enterLoop(MantricoreParser.LoopContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code loop}
+	 * labeled alternative in {@link MantricoreParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void exitLoop(MantricoreParser.LoopContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code fuCall}
+	 * labeled alternative in {@link MantricoreParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void enterFuCall(MantricoreParser.FuCallContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code fuCall}
+	 * labeled alternative in {@link MantricoreParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void exitFuCall(MantricoreParser.FuCallContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code printId}
 	 * labeled alternative in {@link MantricoreParser#program}.
 	 * @param ctx the parse tree
@@ -290,6 +336,36 @@ public interface MantricoreListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBfals(MantricoreParser.BfalsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MantricoreParser#function}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunction(MantricoreParser.FunctionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MantricoreParser#function}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunction(MantricoreParser.FunctionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MantricoreParser#loopParam}.
+	 * @param ctx the parse tree
+	 */
+	void enterLoopParam(MantricoreParser.LoopParamContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MantricoreParser#loopParam}.
+	 * @param ctx the parse tree
+	 */
+	void exitLoopParam(MantricoreParser.LoopParamContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MantricoreParser#ifParam}.
+	 * @param ctx the parse tree
+	 */
+	void enterIfParam(MantricoreParser.IfParamContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MantricoreParser#ifParam}.
+	 * @param ctx the parse tree
+	 */
+	void exitIfParam(MantricoreParser.IfParamContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link MantricoreParser#array}.
 	 * @param ctx the parse tree

@@ -1,11 +1,16 @@
 grammar Mantricore;
 
-start: ( program? NEWLINE )* EOF;
+start: ( (program|function)? NEWLINE )* EOF;
 
-program:  PRINT '(' ID ')'              #printId
-          | PRINT '(' expression ')'    #printExp
-          | READ '(' ID ')'             #readId
-          | ID ASSIGN expression        #assignExpr
+block: ( program? NEWLINE )*;
+
+program:   IF '(' ifParam ')' BEGIN block END               #if
+          | LOOP '(' loopParam ')' BEGIN block END          #loop
+          | ID '()'                                         #fuCall
+          | PRINT '(' ID ')'                                #printId
+          | PRINT '(' expression ')'                        #printExp
+          | READ '(' ID ')'                                 #readId
+          | ID ASSIGN expression                            #assignExpr
 ;
 
 expression: logicalExpression ;
@@ -36,6 +41,12 @@ value: ID           #id
        | 'false'    #bfals
 ;
 
+function: FUNCTION ID '()' BEGIN block END;
+
+loopParam: expression;
+
+ifParam: logicalExpression;
+
 array: 'array' '[' expressionList ']';
 
 matrix: 'matrix' '[' matrixRow (',' matrixRow)* ']';
@@ -43,6 +54,14 @@ matrix: 'matrix' '[' matrixRow (',' matrixRow)* ']';
 matrixRow: '[' expressionList ']';
 
 expressionList: value (',' value)*;
+
+IF: 'whatif';
+
+LOOP: 'repeat';
+
+FUNCTION: 'fthis';
+
+STRUC: 'struc';
 
 BEGIN:  '{';
 

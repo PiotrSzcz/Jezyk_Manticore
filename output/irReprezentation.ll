@@ -5,36 +5,29 @@ declare i32 @scanf(i8*, ...)
 @strs = constant [3 x i8] c"%d\00"
 @strd = internal constant [4 x i8] c"%lf\00"
 
-define i32 @main() nounwind{
-  %x = alloca i32
-  store i32 10, i32* %x
-  %1 = load i32, i32* %x
+@x = global i32 0
+define void @dupa() nounwind {
+  %z = alloca i32
+  store i32 1, i32* %z
+  %1 = load i32, i32* @x
   %2 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpi, i32 0, i32 0), i32 %1)
-  %y = alloca double
-  store double 3.14, double* %y
-  %3 = load double, double* %y
-  %4 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %3)
-  %z = alloca float
-  store float 2.71000003814697270000, float* %z
-  %5 = load float, float* %z
-  %6 = fpext float %5 to double 
-  %7 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %6)
-  %8 = add i32 2, 2
-  %9 = add i32 100, %8
-  %d = alloca i32
-  store i32 %9, i32* %d
-  %10 = fdiv double 4.12, 4.21
-  %f = alloca double
-  store double %10, double* %f
-  %11 = load i32, i32* %d
-  %12 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpi, i32 0, i32 0), i32 %11)
-  %13 = load double, double* %f
-  %14 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %13)
-  %15 = icmp eq i32 0, 0
-  %16 = xor i1 %15, true
-  %17 = select i1 %16, i32 0, i32 1
-  %a = alloca i32
-  store i32 %17, i32* %a
-  %18 = load i32, i32* %a
-  %19 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpi, i32 0, i32 0), i32 %18)
+  %3 = load i32, i32* %y
+  %4 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpi, i32 0, i32 0), i32 %3)
+  ret void
+}
+
+define i32 @main() nounwind{
+  store i32 10, i32* @x
+  %1 = icmp eq i32 1, 1
+  %2 = zext i1  %1 to i32
+  %3 = icmp ne i32 %2, 0
+  br i1 %3, label %true1, label %false1
+  true1:
+  %y = alloca i32
+  store i32 3, i32* %y
+  %4 = load i32, i32* @x
+  %5 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpi, i32 0, i32 0), i32 %4)
+  br label %false1
+  false1:
+  call void @dupa()
   ret i32 0}

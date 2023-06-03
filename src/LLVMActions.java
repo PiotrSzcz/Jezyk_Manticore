@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.HashSet;
 
 enum VarType{ INT, FLOAT }
 
@@ -35,6 +36,12 @@ public class LLVMActions extends MantricoreBaseListener {
     HashMap<String, Value> variables = new HashMap<String, Value>();
     Stack<Value> stack = new Stack<Value>();
 
+    HashSet<String> functions = new HashSet<String>();
+    HashSet<String> localnames = new HashSet<String>();
+    HashSet<String> globalnames = new HashSet<String>();
+    String logicalVal,function;
+    Boolean global = true;
+
     void error(int line, String msg){
         System.err.println("Error, line "+line+", "+msg);
         System.exit(1);
@@ -42,7 +49,7 @@ public class LLVMActions extends MantricoreBaseListener {
 
     @Override
     public void enterStart(MantricoreParser.StartContext ctx) {
-        super.enterStart(ctx);
+        global = true;
     }
 
     @Override
@@ -57,15 +64,33 @@ public class LLVMActions extends MantricoreBaseListener {
     }
 
     @Override
+    public void exitBlock(MantricoreParser.BlockContext ctx) {
+        if (ctx.getParent() instanceof MantricoreParser.LoopContext) {
+            LLVMGenerator.repeatend();
+            global = true;
+        } else if (ctx.getParent() instanceof MantricoreParser.FunctionContext) {
+            LLVMGenerator.function_end();
+            global = true;
+        } else if (ctx.getParent() instanceof MantricoreParser.IfContext) {
+            LLVMGenerator.ifend();
+            global = true;
+        }
+    }
+
+    @Override
     public void exitPrintId(MantricoreParser.PrintIdContext ctx) {
         String ID = ctx.ID().getText();
         VarType type = variables.get(ID).type;
-        if (VarType.INT.equals(type)) {
-            LLVMGenerator.printf_int(ID);
-        } else if (VarType.FLOAT.equals(type)) {
-            LLVMGenerator.printf_float(ID, variables.get(ID).precision.toString());
+        if (!global || globalnames.contains(ID)) {
+            if (VarType.INT.equals(type)) {
+                LLVMGenerator.printf_int(ID, globalnames);
+            } else if (VarType.FLOAT.equals(type)) {
+                LLVMGenerator.printf_float(ID, variables.get(ID).precision.toString(), globalnames);
+            } else {
+                ctx.getStart().getLine();
+                System.err.println("Line "+ ctx.getStart().getLine()+", unknown variable: "+ID);
+            }
         } else {
-            ctx.getStart().getLine();
             System.err.println("Line "+ ctx.getStart().getLine()+", unknown variable: "+ID);
         }
     }
@@ -79,15 +104,15 @@ public class LLVMActions extends MantricoreBaseListener {
     public void exitReadId(MantricoreParser.ReadIdContext ctx) {
         String ID = ctx.ID().getText();
 
-        if (!( variables.containsKey( ID ))){
-            LLVMGenerator.declare_int(ID);
+        if (!( variables.containsKey(ID))){
+            LLVMGenerator.declare_int(ID, global);
             variables.put(ID, new Value(ID, VarType.INT, Precision.DM));
         } else {
             if (VarType.FLOAT.equals(variables.get(ID).type)){
                 variables.put(ID, new Value(ID, VarType.INT, Precision.DM));
             }
         }
-        LLVMGenerator.scantf_int(ID);
+        LLVMGenerator.scantf_int(ID, globalnames);
     }
 
     @Override
@@ -96,14 +121,35 @@ public class LLVMActions extends MantricoreBaseListener {
         Value v = stack.pop();
         variables.put(ID, new Value(ID, v.type, v.precision));
         if (VarType.INT.equals(v.type)) {
-            LLVMGenerator.declare_int(ID);
-            LLVMGenerator.assign_int(ID, v.name);
+            LLVMGenerator.declare_int(ID, global);
+            if (global) {
+                globalnames.add(ID);
+            } else if (!globalnames.contains(ID)) {
+                localnames.add(ID);
+            }
+            LLVMGenerator.assign_int(ID, v.name, globalnames);
         } else if (VarType.FLOAT.equals(v.type)) {
-            LLVMGenerator.declare_float(ID, v.name, v.precision.toString());
-            LLVMGenerator.assign_float(ID, v.name, v.precision.toString());
+            LLVMGenerator.declare_float(ID, v.precision.toString(), global);
+            if (global) {
+                globalnames.add(ID);
+            } else if (!globalnames.contains(ID)) {
+                localnames.add(ID);
+            }
+            LLVMGenerator.assign_float(ID, v.name, v.precision.toString(), globalnames);
         } else {
             System.err.println("Line "+ ctx.getStart().getLine()+", unknown variable: "+ID);
         }
+    }
+
+    @Override
+    public void exitFuCall(MantricoreParser.FuCallContext ctx) {
+        String ID = ctx.ID().getText();
+        LLVMGenerator.call(ID);
+    }
+
+    @Override
+    public void exitIf(MantricoreParser.IfContext ctx) {
+        super.exitIf(ctx);
     }
 
     @Override
@@ -272,54 +318,47 @@ public class LLVMActions extends MantricoreBaseListener {
         stack.push( new Value(ctx.NUMBER().getText(), type, precision) );
     }
 
+
     @Override
-    public void enterString(MantricoreParser.StringContext ctx) {
-        super.enterString(ctx);
+    public void enterFunction(MantricoreParser.FunctionContext ctx) {
+        global = false;
+        function = ctx.ID().getText();
+        functions.add(function);
+        LLVMGenerator.function_start(function);
     }
 
     @Override
-    public void exitString(MantricoreParser.StringContext ctx) {
-        super.exitString(ctx);
+    public void exitFunction(MantricoreParser.FunctionContext ctx) {
+        super.exitFunction(ctx);
     }
 
     @Override
-    public void enterArrayVal(MantricoreParser.ArrayValContext ctx) {
-        super.enterArrayVal(ctx);
+    public void exitLoopParam(MantricoreParser.LoopParamContext ctx) {
+        global = false;
+        if (stack.empty()) {
+            error(ctx.getStart().getLine(), "loop param can not be handled");
+        }
+        Value value = stack.pop();
+        if (VarType.INT.equals(value.type)) {
+            LLVMGenerator.repeatstart(value.name);
+        } else {
+            error(ctx.getStart().getLine(), "loop param can't be FLOAT type");
+        }
+
     }
 
     @Override
-    public void exitArrayVal(MantricoreParser.ArrayValContext ctx) {
-        super.exitArrayVal(ctx);
-    }
+    public void exitIfParam(MantricoreParser.IfParamContext ctx) {
+        Value poped = stack.pop();
+        stack.push(poped);
 
-    @Override
-    public void enterMatrixVal(MantricoreParser.MatrixValContext ctx) {
-        super.enterMatrixVal(ctx);
-    }
-
-    @Override
-    public void exitMatrixVal(MantricoreParser.MatrixValContext ctx) {
-        super.exitMatrixVal(ctx);
-    }
-
-    @Override
-    public void enterBtrue(MantricoreParser.BtrueContext ctx) {
-        super.enterBtrue(ctx);
-    }
-
-    @Override
-    public void exitBtrue(MantricoreParser.BtrueContext ctx) {
-        super.exitBtrue(ctx);
-    }
-
-    @Override
-    public void enterBfals(MantricoreParser.BfalsContext ctx) {
-        super.enterBfals(ctx);
-    }
-
-    @Override
-    public void exitBfals(MantricoreParser.BfalsContext ctx) {
-        super.exitBfals(ctx);
+        if (VarType.INT.equals(poped.type)) {
+            LLVMGenerator.int_to_i1(poped.name);
+        } else if (VarType.FLOAT.equals(poped.type)) {
+            error(ctx.getStart().getLine(), "if statment param can't be FLOAT type");
+        }
+        global = false;
+        LLVMGenerator.ifstart();
     }
 
     @Override

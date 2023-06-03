@@ -18,7 +18,7 @@ public class ManticoreCompiler {
             CommonTokenStream commonTokenStream = new CommonTokenStream(mantricoreLexer);
             MantricoreParser mantricoreParser = new MantricoreParser(commonTokenStream);
             ParseTree parseTree = mantricoreParser.start();
-            //System.out.println(parseTree.toStringTree(mantricoreParser));
+            System.out.println(parseTree.toStringTree(mantricoreParser));
             ParseTreeWalker walker = new ParseTreeWalker();
             walker.walk(new LLVMActions("./output/irReprezentation"), parseTree);
             System.out.println("IR zostało zapisane do pliku: " + "irReprezentation");
