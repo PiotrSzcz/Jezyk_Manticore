@@ -11,6 +11,7 @@ program:   IF '(' ifParam ')' BEGIN block END               #if
           | PRINT '(' expression ')'                        #printExp
           | READ '(' ID ')'                                 #readId
           | ID ASSIGN expression                            #assignExpr
+          | STRUC ID BEGIN (expression)* END                #structure
 ;
 
 expression: logicalExpression ;

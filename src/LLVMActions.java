@@ -5,9 +5,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Stack;
-import java.util.HashSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 enum VarType{ INT, FLOAT }
 
@@ -23,6 +22,10 @@ class Value{
         this.type = type;
         this.precision = precision;
     }
+
+    public Precision getPrecision() {
+        return precision;
+    }
 }
 
 public class LLVMActions extends MantricoreBaseListener {
@@ -35,6 +38,10 @@ public class LLVMActions extends MantricoreBaseListener {
 
     HashMap<String, Value> variables = new HashMap<String, Value>();
     Stack<Value> stack = new Stack<Value>();
+
+    Stack<Value> strucStack = new Stack<Value>();
+
+    Boolean enteredStuc = false;
 
     HashSet<String> functions = new HashSet<String>();
     HashSet<String> localnames = new HashSet<String>();
@@ -142,6 +149,36 @@ public class LLVMActions extends MantricoreBaseListener {
     }
 
     @Override
+    public void enterStructure(MantricoreParser.StructureContext ctx) {
+        enteredStuc= true;
+    }
+
+    @Override
+    public void exitStructure(MantricoreParser.StructureContext ctx) {
+        String name = ctx.ID().toString();
+        enteredStuc= false;
+        List<Value> lista = new ArrayList<>();
+        while (!strucStack.isEmpty()) {
+            lista.add(strucStack.pop());
+        }
+        Collections.reverse(lista);
+        List<String> listOfTypes = lista.stream()
+                .map(Value::getPrecision)
+                .map(Objects::toString)
+                .map(value -> {
+                    return switch (value) {
+                        case "DM" -> "i32";
+                        case "FLOAT32" -> "float";
+                        case "FLOAT64" -> "double";
+                        default -> throw new IllegalStateException("Unexpected value: " + value);
+                    };
+                })
+                .map(Objects::toString)
+                .collect(Collectors.toList());
+        LLVMGenerator.declare_struc(name, listOfTypes);
+    }
+
+    @Override
     public void exitFuCall(MantricoreParser.FuCallContext ctx) {
         String ID = ctx.ID().getText();
         LLVMGenerator.call(ID);
@@ -154,7 +191,9 @@ public class LLVMActions extends MantricoreBaseListener {
 
     @Override
     public void exitExpression(MantricoreParser.ExpressionContext ctx) {
-        super.exitExpression(ctx);
+        if (enteredStuc) {
+            strucStack.push(stack.pop());
+        }
     }
 
     @Override

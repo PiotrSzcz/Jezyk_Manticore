@@ -37,7 +37,7 @@ class LLVMGenerator{
     }
 
     static void declare_struc(String name, List<String> values) {
-        header_text += "%"+name+" = type {" +values.toString()+ "}\n";
+        header_text += "%"+name+" = type {" +values.toString().replace('[',' ').replace(']',' ')+ "}\n";
     }
 
     static void assign_int(String id, String value, HashSet<String> global){

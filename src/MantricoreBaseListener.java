@@ -124,6 +124,18 @@ public class MantricoreBaseListener implements MantricoreListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterStructure(MantricoreParser.StructureContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStructure(MantricoreParser.StructureContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExpression(MantricoreParser.ExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
