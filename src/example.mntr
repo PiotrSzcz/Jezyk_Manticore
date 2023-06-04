@@ -7,6 +7,15 @@ fthis foo(Myclass) {
     y = arg0 + arg1
     print(y)
 }
-classExample foo()
 
+class Myclasss { 1 1 }
+Myclasss classExamplee class { 5 11 }
+
+fthis fooo(Myclasss) {
+    y = arg0 + arg1
+    print(y)
+}
+
+classExample foo()
+classExamplee fooo()
 print(x)

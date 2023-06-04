@@ -92,8 +92,9 @@ public class LLVMActions extends MantricoreBaseListener {
     HashSet<String> functions = new HashSet<String>();
     HashSet<String> localnames = new HashSet<String>();
     HashSet<String> globalnames = new HashSet<String>();
-    String logicalVal, function;
+    String function;
     Boolean global = true;
+    int functionNumber=1;
 
     void error(int line, String msg) {
         System.err.println("Error, line " + line + ", " + msg);
@@ -343,18 +344,12 @@ public class LLVMActions extends MantricoreBaseListener {
         String obj = ctx.ID(0).getText();
         String fun = ctx.ID(1).getText();
         String classType = classes.get(obj).type;
-        if (classes.values().stream().anyMatch(x -> x.listOfFunctions.contains(fun))) {
-            LLVMGenerator.classFunCall(obj, fun, classType);
+        if (classes.get(obj).listOfFunctions.stream().anyMatch(val -> val.equals(fun))) {
+            LLVMGenerator.classFunCall(obj, fun, classType, functionNumber);
+            functionNumber++;
         } else {
             error(ctx.getStart().getLine(), "can not find function: "+fun+" supported by class"+classType);
         }
-
-
-    }
-
-    @Override
-    public void exitIf(MantricoreParser.IfContext ctx) {
-        super.exitIf(ctx);
     }
 
     @Override
@@ -400,11 +395,6 @@ public class LLVMActions extends MantricoreBaseListener {
     }
 
     @Override
-    public void exitLogical(MantricoreParser.LogicalContext ctx) {
-        super.exitLogical(ctx);
-    }
-
-    @Override
     public void exitAdd(MantricoreParser.AddContext ctx) {
         Value v1 = stack.pop();
         Value v2 = stack.pop();
@@ -445,11 +435,6 @@ public class LLVMActions extends MantricoreBaseListener {
         } else {
             error(ctx.getStart().getLine(), "add operattion type mismatch.");
         }
-    }
-
-    @Override
-    public void exitArithmetic(MantricoreParser.ArithmeticContext ctx) {
-        super.exitArithmetic(ctx);
     }
 
     @Override
@@ -516,13 +501,6 @@ public class LLVMActions extends MantricoreBaseListener {
         }
     }
 
-
-    @Override
-    public void exitId(MantricoreParser.IdContext ctx) {
-        super.exitId(ctx);
-    }
-
-
     @Override
     public void exitNumber(MantricoreParser.NumberContext ctx) {
         VarType type = ctx.NUMBER().getText().contains(".") ? VarType.FLOAT : VarType.INT;
@@ -586,60 +564,5 @@ public class LLVMActions extends MantricoreBaseListener {
         }
         global = true;
         LLVMGenerator.ifstart();
-    }
-
-    @Override
-    public void enterArray(MantricoreParser.ArrayContext ctx) {
-        super.enterArray(ctx);
-    }
-
-    @Override
-    public void exitArray(MantricoreParser.ArrayContext ctx) {
-        super.exitArray(ctx);
-    }
-
-    @Override
-    public void enterMatrix(MantricoreParser.MatrixContext ctx) {
-        super.enterMatrix(ctx);
-    }
-
-    @Override
-    public void exitMatrix(MantricoreParser.MatrixContext ctx) {
-        super.exitMatrix(ctx);
-    }
-
-    @Override
-    public void enterMatrixRow(MantricoreParser.MatrixRowContext ctx) {
-        super.enterMatrixRow(ctx);
-    }
-
-    @Override
-    public void exitMatrixRow(MantricoreParser.MatrixRowContext ctx) {
-        super.exitMatrixRow(ctx);
-    }
-
-    @Override
-    public void enterExpressionList(MantricoreParser.ExpressionListContext ctx) {
-        super.enterExpressionList(ctx);
-    }
-
-    @Override
-    public void exitExpressionList(MantricoreParser.ExpressionListContext ctx) {
-        super.exitExpressionList(ctx);
-    }
-
-    @Override
-    public void exitEveryRule(ParserRuleContext ctx) {
-        super.exitEveryRule(ctx);
-    }
-
-    @Override
-    public void visitTerminal(TerminalNode node) {
-        super.visitTerminal(node);
-    }
-
-    @Override
-    public void visitErrorNode(ErrorNode node) {
-        super.visitErrorNode(node);
     }
 }

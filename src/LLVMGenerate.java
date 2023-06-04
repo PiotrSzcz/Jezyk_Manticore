@@ -437,9 +437,9 @@ class LLVMGenerator {
         buffer += "call void @" + id + "()\n";
     }
 
-    static void classFunCall(String obj, String funID, String className) {
-        buffer += "%objPtr = bitcast %" + className + "* @" + obj + " to %" + className + "*\n";
-        buffer += "call void @" + funID + "(%" + className + "* %objPtr)" + "\n";
+    static void classFunCall(String obj, String funID, String className, int classNumber) {
+        buffer += "%objPtr"+classNumber+" = bitcast %" + className + "* @" + obj + " to %" + className + "*\n";
+        buffer += "call void @" + funID + "(%" + className + "* %objPtr" +classNumber+ ")\n";
     }
 
     private static void formatBuffer() {
