@@ -106,6 +106,11 @@ public class LLVMActions extends MantricoreBaseListener {
     }
 
     @Override
+    public void enterIf(MantricoreParser.IfContext ctx) {
+        global = true;
+    }
+
+    @Override
     public void exitPrintId(MantricoreParser.PrintIdContext ctx) {
         String ID = ctx.ID().getText();
         VarType type = variables.get(ID).type;
@@ -462,7 +467,7 @@ public class LLVMActions extends MantricoreBaseListener {
         } else if (VarType.FLOAT.equals(poped.type)) {
             error(ctx.getStart().getLine(), "if statment param can't be FLOAT type");
         }
-        global = false;
+        global = true;
         LLVMGenerator.ifstart();
     }
 

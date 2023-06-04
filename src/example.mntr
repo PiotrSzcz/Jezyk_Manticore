@@ -1,6 +1,21 @@
+x = 1
+
+whatif (1==1) {
+    y=2
+    print(x)
+}
+
+fthis function() {
+    z = 3
+    print(y)
+    print(z)
+}
+
 struc test { 1 2.71f 3.14 1 1}
 test nazwaStruktury { 1 2.71f 3.14 3 12}
 print(struc nazwaStruktury)
 
-y = 3.14f
-print(y)
+w = 3.14f
+print(w)
+
+function()
