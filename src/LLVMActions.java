@@ -49,6 +49,17 @@ class Structure {
     }
 }
 
+class Classes extends Structure {
+    public List<String> listOfFunctions;
+    public Classes(String name, String type, List<Value> listOFValues, List<String> listOfFunctions) {
+        super(name, type, listOFValues);
+        this.listOfFunctions = listOfFunctions;
+    }
+    public List<String> getListOfFunctions() {
+        return listOfFunctions;
+    }
+}
+
 public class LLVMActions extends MantricoreBaseListener {
 
     private final String parameter;
@@ -59,7 +70,9 @@ public class LLVMActions extends MantricoreBaseListener {
 
     HashMap<String, Value> variables = new HashMap<String, Value>();
     HashMap<String, List<Value>> structuresDeclaration = new HashMap<String, List<Value>>();
+    HashMap<String, List<Value>> classDeclaration = new HashMap<String, List<Value>>();
     HashMap<String, Structure> structures = new HashMap<String, Structure>();
+    HashMap<String, Classes> classes = new HashMap<String, Classes>();
     Stack<Value> stack = new Stack<Value>();
 
     Stack<Value> strucStack = new Stack<Value>();
@@ -241,6 +254,61 @@ public class LLVMActions extends MantricoreBaseListener {
             if (areListsEqual) {
                 LLVMGenerator.assign_struc(type, name, listOfValues);
                 structures.put(name, new Structure(name, type, listOfValues));
+            } else {
+                error(ctx.getStart().getLine(), "structure type mismatch.");
+            }
+        } else {
+            error(ctx.getStart().getLine(), "structure name not recognized");
+        }
+    }
+
+    @Override
+    public void enterClassDeclaration(MantricoreParser.ClassDeclarationContext ctx) {
+        enteredStuc= true;
+    }
+
+    @Override
+    public void exitClassDeclaration(MantricoreParser.ClassDeclarationContext ctx) {
+        String name = ctx.ID().toString();
+        enteredStuc= false;
+        List<Value> listOfValues = getValuesFromStrucStack();
+        List<String> listOfTypes = listOfValues.stream()
+                .map(Value::getPrecision)
+                .map(Objects::toString)
+                .map(value -> {
+                    return switch (value) {
+                        case "DM" -> "i32";
+                        case "FLOAT32" -> "float";
+                        case "FLOAT64" -> "double";
+                        default -> throw new IllegalStateException("Unexpected value: " + value);
+                    };
+                })
+                .map(Objects::toString)
+                .collect(Collectors.toList());
+        LLVMGenerator.declare_class(name, listOfTypes);
+        classDeclaration.put(name, listOfValues);
+    }
+
+    @Override
+    public void enterClassAssign(MantricoreParser.ClassAssignContext ctx) {
+        enteredStuc= true;
+    }
+
+    @Override
+    public void exitClassAssign(MantricoreParser.ClassAssignContext ctx) {
+        String name = ctx.ID(1).toString();
+        String type = ctx.ID(0).toString();
+        enteredStuc= false;
+        List<Value> listOfValues = getValuesFromStrucStack();
+        if (classDeclaration.containsKey(type)) {
+            List<Value> listOfTypes = classDeclaration.get(type);
+            boolean areListsEqual = listOfValues.stream()
+                    .allMatch(value1 -> listOfTypes.stream()
+                            .anyMatch(value2 -> value1.getType().equals(value2.getType()) && value1.getPrecision().equals(value2.getPrecision())));
+            if (areListsEqual) {
+                LLVMGenerator.assign_class(name, type, listOfValues);
+                List<String> list = List.of();
+                classes.put(name, new Classes(name, type, listOfValues, list));
             } else {
                 error(ctx.getStart().getLine(), "structure type mismatch.");
             }

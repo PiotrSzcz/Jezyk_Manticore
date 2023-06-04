@@ -14,6 +14,8 @@ program:   IF '(' ifParam ')' BEGIN block END               #if
           | ID ASSIGN expression                            #assignExpr
           | STRUC ID BEGIN (expression)* END                #structure
           | ID ID BEGIN (expression)* END                   #strucAssign
+          | CLASS ID BEGIN (expression)* END                #classDeclaration
+          | ID ID CLASS BEGIN (expression)* END             #classAssign
 ;
 
 expression: logicalExpression ;
@@ -57,6 +59,8 @@ matrix: 'matrix' '[' matrixRow (',' matrixRow)* ']';
 matrixRow: '[' expressionList ']';
 
 expressionList: value (',' value)*;
+
+CLASS: 'class';
 
 IF: 'whatif';
 
