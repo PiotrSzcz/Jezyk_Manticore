@@ -9,6 +9,7 @@ program:   IF '(' ifParam ')' BEGIN block END               #if
           | ID '()'                                         #fuCall
           | PRINT '(' ID ')'                                #printId
           | PRINT '(' expression ')'                        #printExp
+          | PRINT '(' STRUC ID ')'                          #printStruc
           | READ '(' ID ')'                                 #readId
           | ID ASSIGN expression                            #assignExpr
           | STRUC ID BEGIN (expression)* END                #structure

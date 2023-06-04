@@ -12,25 +12,40 @@ enum VarType{ INT, FLOAT }
 
 enum Precision{FLOAT32, FLOAT64, DM}
 
-class Value{
+class Value {
     public String name;
     public VarType type;
-
     public Precision precision;
     public Value( String name, VarType type, Precision precision ){
         this.name = name;
         this.type = type;
         this.precision = precision;
     }
-
     public Precision getPrecision() {
         return precision;
     }
     public VarType getType() {
         return type;
     }
+}
+
+class Structure {
+    public String name;
+    public String type;
+    public List<Value> listOFValues;
+    public Structure (String name, String type, List<Value> listOFValues) {
+        this.name = name;
+        this.type = type;
+        this.listOFValues = listOFValues;
+    }
     public String getName() {
         return name;
+    }
+    public String getType() {
+        return type;
+    }
+    public List<Value> getListOFValues() {
+        return listOFValues;
     }
 }
 
@@ -43,14 +58,12 @@ public class LLVMActions extends MantricoreBaseListener {
     }
 
     HashMap<String, Value> variables = new HashMap<String, Value>();
-
-    HashMap<String, List<Value>> structures = new HashMap<String, List<Value>>();
+    HashMap<String, List<Value>> structuresDeclaration = new HashMap<String, List<Value>>();
+    HashMap<String, Structure> structures = new HashMap<String, Structure>();
     Stack<Value> stack = new Stack<Value>();
 
     Stack<Value> strucStack = new Stack<Value>();
-
     Boolean enteredStuc = false;
-
     HashSet<String> functions = new HashSet<String>();
     HashSet<String> localnames = new HashSet<String>();
     HashSet<String> globalnames = new HashSet<String>();
@@ -113,6 +126,18 @@ public class LLVMActions extends MantricoreBaseListener {
     @Override
     public void exitPrintExp(MantricoreParser.PrintExpContext ctx) {
         super.exitPrintExp(ctx);
+    }
+
+    @Override
+    public void exitPrintStruc(MantricoreParser.PrintStrucContext ctx) {
+        String ID = ctx.ID().getText();
+        if (structures.containsKey(ID)) {
+            Structure structure = structures.get(ID);
+            LLVMGenerator.print_struc(structure.type, structure.name, structure.listOFValues);
+        } else {
+            System.err.println("Line "+ ctx.getStart().getLine()+", unknown structure: "+ID);
+        }
+
     }
 
     @Override
@@ -180,7 +205,7 @@ public class LLVMActions extends MantricoreBaseListener {
                 .map(Objects::toString)
                 .collect(Collectors.toList());
         LLVMGenerator.declare_struc(name, listOfTypes);
-        structures.put(name, listOfValues);
+        structuresDeclaration.put(name, listOfValues);
     }
 
     private List<Value> getValuesFromStrucStack() {
@@ -203,13 +228,14 @@ public class LLVMActions extends MantricoreBaseListener {
         String type = ctx.ID(0).toString();
         enteredStuc= false;
         List<Value> listOfValues = getValuesFromStrucStack();
-        if (structures.containsKey(type)) {
-            List<Value> listOfTypes = structures.get(type);
+        if (structuresDeclaration.containsKey(type)) {
+            List<Value> listOfTypes = structuresDeclaration.get(type);
             boolean areListsEqual = listOfValues.stream()
                     .allMatch(value1 -> listOfTypes.stream()
                             .anyMatch(value2 -> value1.getType().equals(value2.getType()) && value1.getPrecision().equals(value2.getPrecision())));
             if (areListsEqual) {
                 LLVMGenerator.assign_struc(type, name, listOfValues);
+                structures.put(name, new Structure(name, type, listOfValues));
             } else {
                 error(ctx.getStart().getLine(), "structure type mismatch.");
             }

@@ -1,15 +1,14 @@
 import java.util.List;
-import java.util.Objects;
 import java.util.Stack;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 class LLVMGenerator{
 
     static String header_text = "";
     static String main_text = "";
     static String buffer = "";
+    static String valToCall = "";
     static int main_tmp = 1;
     static int reg = 1;
     static int br = 0;
@@ -62,14 +61,31 @@ class LLVMGenerator{
             } else {
                 header_text += vartype+ " " +value.name+", ";
             }
-
         });
         header_text = header_text.substring(0, header_text.length() - 2);
         header_text += " } \n";
     }
 
-    static void print_struc(String type, String name, int numberOfVal) {
-
+    static void print_struc(String type, String name, List<Value> valueList) {
+        buffer += "%format = getelementptr [17 x i8], [17 x i8]* @str, i32 0, i32 0\n";
+        AtomicInteger valCounter = new AtomicInteger(0);
+        valueList.forEach(value -> {
+            String vartype = "";
+            switch (value.precision.toString()) {
+                case "DM" -> vartype = "i32";
+                case "FLOAT32" -> vartype = "float";
+                case "FLOAT64" -> vartype = "double";
+                default -> throw new IllegalStateException("Unexpected value: " + value);
+            }
+            buffer += "%"+reg+" = getelementptr %"+type+", %"+type+"*"+" @"+name+", i32 0, i32 "+valCounter+"\n";
+            buffer += "%strucVal"+valCounter+" = load "+vartype+", "+vartype+"* %"+reg+"\n";
+            valToCall += vartype+" %strucVal"+valCounter+", ";
+            reg++;
+            valCounter.getAndIncrement();
+        });
+        buffer += "call i32 (i8*, ...) @printf(i8* %format, "+valToCall.substring(0, valToCall.length() - 2)+")";
+        valToCall = "";
+        reg++;           //Jak cos nie działą to pewnie to (#czemutoiterujetoniewiem)
     }
 
     static void assign_int(String id, String value, HashSet<String> global){
@@ -398,6 +414,7 @@ class LLVMGenerator{
         text += "@strpd = constant [4 x i8] c\"%f\\0A\\00\"\n";
         text += "@strs = constant [3 x i8] c\"%d\\00\"\n";
         text += "@strd = internal constant [4 x i8] c\"%lf\\00\"\n";
+        text += "@str = private constant [17 x i8] c\"%d %f %lf %d %d\\0A\\00\"\n";
         text += "\n";
         text += header_text;
         text += "define i32 @main() nounwind{\n";

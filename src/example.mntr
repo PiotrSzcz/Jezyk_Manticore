@@ -1,7 +1,6 @@
-x = 10
-print(x)
-struc test { 1 2.71f 3.14 }
-y = 2.1
-print(y)
-test nazwaStruktury { 1 2.71f 3.14 }
+struc test { 1 2.71f 3.14 1 1}
+test nazwaStruktury { 1 2.71f 3.14 3 12}
+print(struc nazwaStruktury)
 
+y = 3.14f
+print(y)
