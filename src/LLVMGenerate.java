@@ -227,6 +227,16 @@ class LLVMGenerator{
         reg++;
     }
 
+    static void add_args(String val1, String val2, String className) {
+
+        buffer += "%"+reg+" = extractvalue %"+className+ " %objVal,"+ val1.replace("arg", " ")+ "\n";
+        reg++;
+        buffer += "%"+reg+" = extractvalue %"+className+ " %objVal,"+ val2.replace("arg", " ")+ "\n";
+        reg++;
+        buffer += "%"+reg+" = add i32 %"+(reg-1)+", %"+(reg-2)+"\n";
+        reg++;
+    }
+
     static void add_float(String val1, String val2, String precision){
         if (precision.equals("FLOAT32")) {
             buffer += "%"+reg+" = fadd float "+val1+", "+val2+"\n";
@@ -394,6 +404,23 @@ class LLVMGenerator{
         reg = main_tmp;
     }
 
+    static void classFun_start(String name, String type){
+        main_text += buffer;
+        main_tmp = reg;
+        buffer = "define void @" + name + "(%" + type + "* %obj) {\n";
+        buffer += "%objVal = load %"+type+", %"+type+"* %obj\n";
+        reg = 1;
+    }
+
+    static void classFun_end() {
+        buffer += "ret void\n";
+        formatBuffer();
+        buffer += "}\n\n";
+        header_text += buffer;
+        buffer = "";
+        reg = main_tmp;
+    }
+
     static void ifstart(){
         br++;
         buffer += "br i1 %"+(reg-1)+", label %true"+br+", label %false"+br+"\n";
@@ -409,6 +436,11 @@ class LLVMGenerator{
 
     static void call(String id) {
         buffer += "call void @" + id + "()\n";
+    }
+
+    static void classFunCall(String obj, String funID, String className) {
+        buffer += "%objPtr = bitcast %"+className+"* @"+obj+" to %"+className+"*\n";
+        buffer += "call void @" + funID + "(%"+className+"* %objPtr)" +"\n";
     }
 
     private static void formatBuffer() {

@@ -1,12 +1,13 @@
 grammar Mantricore;
 
-start: ( (program|function)? NEWLINE )* EOF;
+start: ( (program|function|classfunc)? NEWLINE )* EOF;
 
 block: ( program? NEWLINE )*;
 
 program:   IF '(' ifParam ')' BEGIN block END               #if
           | LOOP '(' loopParam ')' BEGIN block END          #loop
           | ID '()'                                         #fuCall
+          | ID ID '()'                                      #classFuCall
           | PRINT '(' ID ')'                                #printId
           | PRINT '(' expression ')'                        #printExp
           | PRINT '(' STRUC ID ')'                          #printStruc
@@ -47,6 +48,8 @@ value: ID           #id
 ;
 
 function: FUNCTION ID '()' BEGIN block END;
+
+classfunc: FUNCTION ID '(' ID ')' BEGIN block END;
 
 loopParam: expression;
 

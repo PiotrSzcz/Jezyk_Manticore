@@ -76,6 +76,18 @@ public class MantricoreBaseListener implements MantricoreListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterClassFuCall(MantricoreParser.ClassFuCallContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitClassFuCall(MantricoreParser.ClassFuCallContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterPrintId(MantricoreParser.PrintIdContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -419,6 +431,18 @@ public class MantricoreBaseListener implements MantricoreListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitFunction(MantricoreParser.FunctionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterClassfunc(MantricoreParser.ClassfuncContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitClassfunc(MantricoreParser.ClassfuncContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

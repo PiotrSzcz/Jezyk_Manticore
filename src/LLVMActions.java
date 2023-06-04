@@ -74,7 +74,7 @@ public class LLVMActions extends MantricoreBaseListener {
     HashMap<String, Structure> structures = new HashMap<String, Structure>();
     HashMap<String, Classes> classes = new HashMap<String, Classes>();
     Stack<Value> stack = new Stack<Value>();
-
+    String className = "";
     Stack<Value> strucStack = new Stack<Value>();
     Boolean enteredStuc = false;
     HashSet<String> functions = new HashSet<String>();
@@ -114,6 +114,9 @@ public class LLVMActions extends MantricoreBaseListener {
             global = true;
         } else if (ctx.getParent() instanceof MantricoreParser.IfContext) {
             LLVMGenerator.ifend();
+            global = true;
+        } else if (ctx.getParent() instanceof MantricoreParser.ClassfuncContext) {
+            LLVMGenerator.classFun_end();
             global = true;
         }
     }
@@ -324,6 +327,14 @@ public class LLVMActions extends MantricoreBaseListener {
     }
 
     @Override
+    public void exitClassFuCall(MantricoreParser.ClassFuCallContext ctx) {
+        String obj = ctx.ID(0).getText();
+        String fun = ctx.ID(1).getText();
+        String classType = classes.get(obj).type;
+        LLVMGenerator.classFunCall(obj, fun, classType);
+    }
+
+    @Override
     public void exitIf(MantricoreParser.IfContext ctx) {
         super.exitIf(ctx);
     }
@@ -381,11 +392,16 @@ public class LLVMActions extends MantricoreBaseListener {
         Value v2 = stack.pop();
 
         if( v1.type == v2.type && v1.precision == v2.precision ) {
-            if( v1.type == VarType.INT ){
+            if (v1.name.startsWith("arg")) {
+                LLVMGenerator.add_args(v1.name, v2.name, className);
+                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+                return;
+            }
+            if (v1.type == VarType.INT ) {
                 LLVMGenerator.add_int(v1.name, v2.name);
                 stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
             }
-            if( v1.type == VarType.FLOAT ){
+            if (v1.type == VarType.FLOAT ) {
                 LLVMGenerator.add_float(v1.name, v2.name, v1.precision.toString());
                 stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.FLOAT, v1.precision) );
             }
@@ -420,7 +436,9 @@ public class LLVMActions extends MantricoreBaseListener {
 
     @Override
     public void exitTermVal(MantricoreParser.TermValContext ctx) {
-        super.exitTermVal(ctx);
+        if (ctx.value().getText().startsWith("arg")) {
+            stack.push(new Value(ctx.value().getText(), VarType.INT, Precision.DM));
+        }
     }
     @Override
     public void exitDiv(MantricoreParser.DivContext ctx) {
@@ -506,8 +524,13 @@ public class LLVMActions extends MantricoreBaseListener {
     }
 
     @Override
-    public void exitFunction(MantricoreParser.FunctionContext ctx) {
-        super.exitFunction(ctx);
+    public void enterClassfunc(MantricoreParser.ClassfuncContext ctx) {
+        global = false;
+        function = ctx.ID(0).getText();
+        String type = ctx.ID(1).getText();
+        className = type;
+        functions.add(function);
+        LLVMGenerator.classFun_start(function, type);
     }
 
     @Override

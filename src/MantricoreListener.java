@@ -63,6 +63,18 @@ public interface MantricoreListener extends ParseTreeListener {
 	 */
 	void exitFuCall(MantricoreParser.FuCallContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code classFuCall}
+	 * labeled alternative in {@link MantricoreParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void enterClassFuCall(MantricoreParser.ClassFuCallContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code classFuCall}
+	 * labeled alternative in {@link MantricoreParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void exitClassFuCall(MantricoreParser.ClassFuCallContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code printId}
 	 * labeled alternative in {@link MantricoreParser#program}.
 	 * @param ctx the parse tree
@@ -406,6 +418,16 @@ public interface MantricoreListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitFunction(MantricoreParser.FunctionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MantricoreParser#classfunc}.
+	 * @param ctx the parse tree
+	 */
+	void enterClassfunc(MantricoreParser.ClassfuncContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MantricoreParser#classfunc}.
+	 * @param ctx the parse tree
+	 */
+	void exitClassfunc(MantricoreParser.ClassfuncContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link MantricoreParser#loopParam}.
 	 * @param ctx the parse tree

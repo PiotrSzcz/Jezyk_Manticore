@@ -1,10 +1,12 @@
-x = 10
-
-struc test { 1 2.71f 3.14 1 1}
-test nazwaStruktury { 1 2.71f 3.14 3 4}
-print(struc nazwaStruktury)
+x =10
 
 class Myclass { 1 2 }
 Myclass classExample class { 3 4 }
+
+fthis foo(Myclass) {
+    y = arg0 + arg1
+    print(y)
+}
+classExample foo()
 
 print(x)
