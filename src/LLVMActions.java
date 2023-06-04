@@ -67,6 +67,9 @@ class Classes extends Structure {
     public List<String> getListOfFunctions() {
         return listOfFunctions;
     }
+    public void setListOfFunctions(List<String> listOfFunctions) {
+        this.listOfFunctions = listOfFunctions;
+    }
 }
 
 public class LLVMActions extends MantricoreBaseListener {
@@ -340,7 +343,13 @@ public class LLVMActions extends MantricoreBaseListener {
         String obj = ctx.ID(0).getText();
         String fun = ctx.ID(1).getText();
         String classType = classes.get(obj).type;
-        LLVMGenerator.classFunCall(obj, fun, classType);
+        if (classes.values().stream().anyMatch(x -> x.listOfFunctions.contains(fun))) {
+            LLVMGenerator.classFunCall(obj, fun, classType);
+        } else {
+            error(ctx.getStart().getLine(), "can not find function: "+fun+" supported by class"+classType);
+        }
+
+
     }
 
     @Override
@@ -541,6 +550,13 @@ public class LLVMActions extends MantricoreBaseListener {
         className = type;
         functions.add(function);
         LLVMGenerator.classFun_start(function, type);
+        for (Classes cls : classes.values()) {
+            if (cls.getType().equals(type)) {
+                List<String> listOfFunctions = new ArrayList<>(cls.getListOfFunctions());
+                listOfFunctions.add(function);
+                cls.setListOfFunctions(listOfFunctions);
+            }
+        }
     }
 
     @Override
