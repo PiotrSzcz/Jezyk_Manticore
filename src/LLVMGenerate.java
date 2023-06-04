@@ -1,6 +1,10 @@
 import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 class LLVMGenerator{
 
     static String header_text = "";
@@ -38,6 +42,34 @@ class LLVMGenerator{
 
     static void declare_struc(String name, List<String> values) {
         header_text += "%"+name+" = type {" +values.toString().replace('[',' ').replace(']',' ')+ "}\n";
+    }
+
+    static void assign_struc(String type, String name, List<Value> values) {
+        header_text += "@"+name+ " = private constant %"+type+ "{ ";
+        values.forEach(value -> {
+            String vartype = "";
+            switch (value.precision.toString()) {
+                case "DM" -> vartype = "i32";
+                case "FLOAT32" -> vartype = "float";
+                case "FLOAT64" -> vartype = "double";
+                default -> throw new IllegalStateException("Unexpected value: " + value);
+            }
+            if (vartype.equals("float")) {
+                String formattedValue = value.name;
+                float floatValue = Float.parseFloat(value.name);
+                formattedValue = String.format("%.20f", floatValue).replace(",", ".");
+                header_text += vartype+ " " +formattedValue+", ";
+            } else {
+                header_text += vartype+ " " +value.name+", ";
+            }
+
+        });
+        header_text = header_text.substring(0, header_text.length() - 2);
+        header_text += " } \n";
+    }
+
+    static void print_struc(String type, String name, int numberOfVal) {
+
     }
 
     static void assign_int(String id, String value, HashSet<String> global){

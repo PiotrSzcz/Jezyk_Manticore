@@ -26,6 +26,12 @@ class Value{
     public Precision getPrecision() {
         return precision;
     }
+    public VarType getType() {
+        return type;
+    }
+    public String getName() {
+        return name;
+    }
 }
 
 public class LLVMActions extends MantricoreBaseListener {
@@ -37,6 +43,8 @@ public class LLVMActions extends MantricoreBaseListener {
     }
 
     HashMap<String, Value> variables = new HashMap<String, Value>();
+
+    HashMap<String, List<Value>> structures = new HashMap<String, List<Value>>();
     Stack<Value> stack = new Stack<Value>();
 
     Stack<Value> strucStack = new Stack<Value>();
@@ -157,12 +165,8 @@ public class LLVMActions extends MantricoreBaseListener {
     public void exitStructure(MantricoreParser.StructureContext ctx) {
         String name = ctx.ID().toString();
         enteredStuc= false;
-        List<Value> lista = new ArrayList<>();
-        while (!strucStack.isEmpty()) {
-            lista.add(strucStack.pop());
-        }
-        Collections.reverse(lista);
-        List<String> listOfTypes = lista.stream()
+        List<Value> listOfValues = getValuesFromStrucStack();
+        List<String> listOfTypes = listOfValues.stream()
                 .map(Value::getPrecision)
                 .map(Objects::toString)
                 .map(value -> {
@@ -176,6 +180,42 @@ public class LLVMActions extends MantricoreBaseListener {
                 .map(Objects::toString)
                 .collect(Collectors.toList());
         LLVMGenerator.declare_struc(name, listOfTypes);
+        structures.put(name, listOfValues);
+    }
+
+    private List<Value> getValuesFromStrucStack() {
+        List<Value> lista = new ArrayList<>();
+        while (!strucStack.isEmpty()) {
+            lista.add(strucStack.pop());
+        }
+        Collections.reverse(lista);
+        return lista;
+    }
+
+    @Override
+    public void enterStrucAssign(MantricoreParser.StrucAssignContext ctx) {
+        enteredStuc= true;
+    }
+
+    @Override
+    public void exitStrucAssign(MantricoreParser.StrucAssignContext ctx) {
+        String name = ctx.ID(1).toString();
+        String type = ctx.ID(0).toString();
+        enteredStuc= false;
+        List<Value> listOfValues = getValuesFromStrucStack();
+        if (structures.containsKey(type)) {
+            List<Value> listOfTypes = structures.get(type);
+            boolean areListsEqual = listOfValues.stream()
+                    .allMatch(value1 -> listOfTypes.stream()
+                            .anyMatch(value2 -> value1.getType().equals(value2.getType()) && value1.getPrecision().equals(value2.getPrecision())));
+            if (areListsEqual) {
+                LLVMGenerator.assign_struc(type, name, listOfValues);
+            } else {
+                error(ctx.getStart().getLine(), "structure type mismatch.");
+            }
+        } else {
+            error(ctx.getStart().getLine(), "structure name not recognized");
+        }
     }
 
     @Override

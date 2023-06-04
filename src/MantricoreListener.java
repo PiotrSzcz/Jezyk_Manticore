@@ -123,6 +123,18 @@ public interface MantricoreListener extends ParseTreeListener {
 	 */
 	void exitStructure(MantricoreParser.StructureContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code strucAssign}
+	 * labeled alternative in {@link MantricoreParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void enterStrucAssign(MantricoreParser.StrucAssignContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code strucAssign}
+	 * labeled alternative in {@link MantricoreParser#program}.
+	 * @param ctx the parse tree
+	 */
+	void exitStrucAssign(MantricoreParser.StrucAssignContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link MantricoreParser#expression}.
 	 * @param ctx the parse tree
 	 */
