@@ -3,7 +3,7 @@ import java.util.Stack;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class LLVMGenerator{
+class LLVMGenerator {
 
     static String header_text = "";
     static String main_text = "";
@@ -15,36 +15,36 @@ class LLVMGenerator{
     static Stack<Integer> brstack = new Stack<Integer>();
     static Stack<Double> brstack_double = new Stack<Double>();
 
-    static void declare_int(String id, Boolean global){
-        if( global ){
-            header_text += "@"+id+" = global i32 0\n";
+    static void declare_int(String id, Boolean global) {
+        if (global) {
+            header_text += "@" + id + " = global i32 0\n";
         } else {
-            buffer += "%"+id+" = alloca i32\n";
+            buffer += "%" + id + " = alloca i32\n";
         }
     }
 
-    static void declare_float(String id, String precision, Boolean global){
-        if ( global ) {
+    static void declare_float(String id, String precision, Boolean global) {
+        if (global) {
             if (precision.equals("FLOAT32")) {
-                header_text += "@"+id+" = global float 0.0\n";
+                header_text += "@" + id + " = global float 0.0\n";
             } else if (precision.equals("FLOAT64")) {
-                header_text += "@"+id+" = global double 0.0\n";
+                header_text += "@" + id + " = global double 0.0\n";
             }
         } else {
             if (precision.equals("FLOAT32")) {
-                buffer += "%"+id+" = alloca float\n";
+                buffer += "%" + id + " = alloca float\n";
             } else if (precision.equals("FLOAT64")) {
-                buffer += "%"+id+" = alloca double\n";
+                buffer += "%" + id + " = alloca double\n";
             }
         }
     }
 
     static void declare_class(String name, List<String> valuesTypes) {
-        header_text += "%"+name+" = type { "+valuesTypes.toString().replace('[',' ').replace(']',' ')+ "}\n";
+        header_text += "%" + name + " = type { " + valuesTypes.toString().replace('[', ' ').replace(']', ' ') + "}\n";
     }
 
-    static void assign_class(String name, String type, List<Value> values){
-        header_text += "@"+name+" = global %"+type+" { ";
+    static void assign_class(String name, String type, List<Value> values) {
+        header_text += "@" + name + " = global %" + type + " { ";
         values.forEach(value -> {
             String vartype = "";
             switch (value.precision.toString()) {
@@ -57,9 +57,9 @@ class LLVMGenerator{
                 String formattedValue = value.name;
                 float floatValue = Float.parseFloat(value.name);
                 formattedValue = String.format("%.20f", floatValue).replace(",", ".");
-                header_text += vartype+ " " +formattedValue+", ";
+                header_text += vartype + " " + formattedValue + ", ";
             } else {
-                header_text += vartype+ " " +value.name+", ";
+                header_text += vartype + " " + value.name + ", ";
             }
         });
         header_text = header_text.substring(0, header_text.length() - 2);
@@ -69,11 +69,11 @@ class LLVMGenerator{
     }
 
     static void declare_struc(String name, List<String> values) {
-        header_text += "%"+name+" = type {" +values.toString().replace('[',' ').replace(']',' ')+ "}\n";
+        header_text += "%" + name + " = type {" + values.toString().replace('[', ' ').replace(']', ' ') + "}\n";
     }
 
     static void assign_struc(String type, String name, List<Value> values) {
-        header_text += "@"+name+ " = private constant %"+type+ "{ ";
+        header_text += "@" + name + " = private constant %" + type + "{ ";
         values.forEach(value -> {
             String vartype = "";
             switch (value.precision.toString()) {
@@ -86,9 +86,9 @@ class LLVMGenerator{
                 String formattedValue = value.name;
                 float floatValue = Float.parseFloat(value.name);
                 formattedValue = String.format("%.20f", floatValue).replace(",", ".");
-                header_text += vartype+ " " +formattedValue+", ";
+                header_text += vartype + " " + formattedValue + ", ";
             } else {
-                header_text += vartype+ " " +value.name+", ";
+                header_text += vartype + " " + value.name + ", ";
             }
         });
         header_text = header_text.substring(0, header_text.length() - 2);
@@ -106,18 +106,18 @@ class LLVMGenerator{
                 case "FLOAT64" -> vartype = "double";
                 default -> throw new IllegalStateException("Unexpected value: " + value);
             }
-            buffer += "%"+reg+" = getelementptr %"+type+", %"+type+"*"+" @"+name+", i32 0, i32 "+valCounter+"\n";
-            buffer += "%strucVal"+valCounter+" = load "+vartype+", "+vartype+"* %"+reg+"\n";
-            valToCall += vartype+" %strucVal"+valCounter+", ";
+            buffer += "%" + reg + " = getelementptr %" + type + ", %" + type + "*" + " @" + name + ", i32 0, i32 " + valCounter + "\n";
+            buffer += "%strucVal" + valCounter + " = load " + vartype + ", " + vartype + "* %" + reg + "\n";
+            valToCall += vartype + " %strucVal" + valCounter + ", ";
             reg++;
             valCounter.getAndIncrement();
         });
-        buffer += "call i32 (i8*, ...) @printf(i8* %format, "+valToCall.substring(0, valToCall.length() - 2)+")";
+        buffer += "call i32 (i8*, ...) @printf(i8* %format, " + valToCall.substring(0, valToCall.length() - 2) + ")";
         valToCall = "";
         reg++;           //Jak cos nie działą to pewnie to (#czemutoiterujetoniewiem)
     }
 
-    static void assign_int(String id, String value, HashSet<String> global){
+    static void assign_int(String id, String value, HashSet<String> global) {
         if (global != null && global.contains(id)) {
             buffer += "store i32 " + value + ", i32* @" + id + "\n";
         } else {
@@ -129,7 +129,7 @@ class LLVMGenerator{
         if (global.contains(id)) {
             if (precision.equals("FLOAT32")) {
                 String formattedValue = value;
-                if (!value.contains("%")){
+                if (!value.contains("%")) {
                     float floatValue = Float.parseFloat(value);
                     formattedValue = String.format("%.20f", floatValue).replace(",", ".");
                 }
@@ -140,7 +140,7 @@ class LLVMGenerator{
         } else {
             if (precision.equals("FLOAT32")) {
                 String formattedValue = value;
-                if (!value.contains("%")){
+                if (!value.contains("%")) {
                     float floatValue = Float.parseFloat(value);
                     formattedValue = String.format("%.20f", floatValue).replace(",", ".");
                 }
@@ -151,47 +151,46 @@ class LLVMGenerator{
         }
 
 
-
     }
 
-    static void printf_int(String id, HashSet<String> global){
+    static void printf_int(String id, HashSet<String> global) {
         if (global.contains(id)) {
             buffer += "%" + reg + " = load i32, i32* @" + id + "\n";
         } else {
             buffer += "%" + reg + " = load i32, i32* %" + id + "\n";
         }
         reg++;
-        buffer += "%"+reg+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpi, i32 0, i32 0), i32 %"+(reg-1)+")\n";
+        buffer += "%" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpi, i32 0, i32 0), i32 %" + (reg - 1) + ")\n";
         reg++;
     }
 
-    static void printf_float(String id, String precision, HashSet<String> global){
+    static void printf_float(String id, String precision, HashSet<String> global) {
         if (global.contains(id)) {
             if (precision.equals("FLOAT32")) {
                 buffer += "%" + reg + " = load float, float* @" + id + "\n";
                 reg++;
-                buffer += "%" + reg + " = fpext float %" +(reg-1)+ " to double \n";
-                reg ++;
-                buffer += "%"+reg+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %"+(reg-1)+")\n";
+                buffer += "%" + reg + " = fpext float %" + (reg - 1) + " to double \n";
+                reg++;
+                buffer += "%" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %" + (reg - 1) + ")\n";
                 reg++;
             } else if (precision.equals("FLOAT64")) {
                 buffer += "%" + reg + " = load double, double* @" + id + "\n";
                 reg++;
-                buffer += "%"+reg+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %"+(reg-1)+")\n";
+                buffer += "%" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %" + (reg - 1) + ")\n";
                 reg++;
             }
         } else {
             if (precision.equals("FLOAT32")) {
                 buffer += "%" + reg + " = load float, float* %" + id + "\n";
                 reg++;
-                buffer += "%" + reg + " = fpext float %" +(reg-1)+ " to double \n";
-                reg ++;
-                buffer += "%"+reg+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %"+(reg-1)+")\n";
+                buffer += "%" + reg + " = fpext float %" + (reg - 1) + " to double \n";
+                reg++;
+                buffer += "%" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %" + (reg - 1) + ")\n";
                 reg++;
             } else if (precision.equals("FLOAT64")) {
                 buffer += "%" + reg + " = load double, double* %" + id + "\n";
                 reg++;
-                buffer += "%"+reg+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %"+(reg-1)+")\n";
+                buffer += "%" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %" + (reg - 1) + ")\n";
                 reg++;
             }
         }
@@ -199,7 +198,7 @@ class LLVMGenerator{
 
     }
 
-    static void scantf_int(String id, HashSet<String> global){
+    static void scantf_int(String id, HashSet<String> global) {
         if (global.contains(id)) {
             buffer += "%" + reg + " = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strs, i32 0, i32 0), i32* %" + id + ")\n";
         } else {
@@ -208,194 +207,194 @@ class LLVMGenerator{
         reg++;
     }
 
-    static void load_float(String id, String precision){
+    static void load_float(String id, String precision) {
         if (precision.equals("FLOAT32")) {
-            buffer += "%" + reg+ " = load float, double* %" + id + "\n";
+            buffer += "%" + reg + " = load float, double* %" + id + "\n";
         } else if (precision.equals("FLOAT64")) {
-            buffer += "%" + reg+ " = load double, double* %" + id + "\n";
+            buffer += "%" + reg + " = load double, double* %" + id + "\n";
         }
         reg++;
     }
 
-    static void int_to_i1(String val){
-        buffer += "%"+reg+" = icmp ne i32 "+val+", 0\n";
+    static void int_to_i1(String val) {
+        buffer += "%" + reg + " = icmp ne i32 " + val + ", 0\n";
         reg++;
     }
 
-    static void add_int(String val1, String val2){
-        buffer += "%"+reg+" = add i32 "+val1+", "+val2+"\n";
+    static void add_int(String val1, String val2) {
+        buffer += "%" + reg + " = add i32 " + val1 + ", " + val2 + "\n";
         reg++;
     }
 
     static void add_args(String val1, String val2, String className) {
 
-        buffer += "%"+reg+" = extractvalue %"+className+ " %objVal,"+ val1.replace("arg", " ")+ "\n";
+        buffer += "%" + reg + " = extractvalue %" + className + " %objVal," + val1.replace("arg", " ") + "\n";
         reg++;
-        buffer += "%"+reg+" = extractvalue %"+className+ " %objVal,"+ val2.replace("arg", " ")+ "\n";
+        buffer += "%" + reg + " = extractvalue %" + className + " %objVal," + val2.replace("arg", " ") + "\n";
         reg++;
-        buffer += "%"+reg+" = add i32 %"+(reg-1)+", %"+(reg-2)+"\n";
+        buffer += "%" + reg + " = add i32 %" + (reg - 1) + ", %" + (reg - 2) + "\n";
         reg++;
     }
 
-    static void add_float(String val1, String val2, String precision){
+    static void add_float(String val1, String val2, String precision) {
         if (precision.equals("FLOAT32")) {
-            buffer += "%"+reg+" = fadd float "+val1+", "+val2+"\n";
+            buffer += "%" + reg + " = fadd float " + val1 + ", " + val2 + "\n";
         } else if (precision.equals("FLOAT64")) {
-            buffer += "%"+reg+" = fadd double "+val1+", "+val2+"\n";
+            buffer += "%" + reg + " = fadd double " + val1 + ", " + val2 + "\n";
         }
         reg++;
     }
 
-    static void sub_int(String val1, String val2){
-        buffer += "%"+reg+" = sub i32 "+val1+", "+val2+"\n";
+    static void sub_int(String val1, String val2) {
+        buffer += "%" + reg + " = sub i32 " + val1 + ", " + val2 + "\n";
         reg++;
     }
 
-    static void sub_float(String val1, String val2, String precision){
+    static void sub_float(String val1, String val2, String precision) {
         if (precision.equals("FLOAT32")) {
-            buffer += "%"+reg+" = fsub float "+val2+", "+val1+"\n";
+            buffer += "%" + reg + " = fsub float " + val2 + ", " + val1 + "\n";
         } else if (precision.equals("FLOAT64")) {
-            buffer += "%"+reg+" = fsub double "+val2+", "+val1+"\n";
+            buffer += "%" + reg + " = fsub double " + val2 + ", " + val1 + "\n";
         }
         reg++;
     }
 
-    static void mult_int(String val1, String val2){
-        buffer += "%"+reg+" = mul i32 "+val1+", "+val2+"\n";
+    static void mult_int(String val1, String val2) {
+        buffer += "%" + reg + " = mul i32 " + val1 + ", " + val2 + "\n";
         reg++;
     }
 
-    static void mult_float(String val1, String val2, String precision){
+    static void mult_float(String val1, String val2, String precision) {
         if (precision.equals("FLOAT32")) {
-            buffer += "%"+reg+" = fmul float "+val1+", "+val2+"\n";
+            buffer += "%" + reg + " = fmul float " + val1 + ", " + val2 + "\n";
         } else if (precision.equals("FLOAT64")) {
-            buffer += "%"+reg+" = fmul double "+val1+", "+val2+"\n";
+            buffer += "%" + reg + " = fmul double " + val1 + ", " + val2 + "\n";
         }
         reg++;
     }
 
-    static void div_int(String val1, String val2){
-        buffer += "%"+reg+" = sdiv i32 "+val1+", "+val2+"\n";
+    static void div_int(String val1, String val2) {
+        buffer += "%" + reg + " = sdiv i32 " + val1 + ", " + val2 + "\n";
         reg++;
     }
 
-    static void div_float(String val1, String val2, String precision){
+    static void div_float(String val1, String val2, String precision) {
         if (precision.equals("FLOAT32")) {
-            buffer += "%"+reg+" = fdiv float "+val2+", "+val1+"\n";
+            buffer += "%" + reg + " = fdiv float " + val2 + ", " + val1 + "\n";
         } else if (precision.equals("FLOAT64")) {
-            buffer += "%"+reg+" = fdiv double "+val2+", "+val1+"\n";
+            buffer += "%" + reg + " = fdiv double " + val2 + ", " + val1 + "\n";
         }
         reg++;
     }
 
-    static void comp_int(String val1, String val2){
-        buffer += "%"+reg+" = icmp eq i32 "+val1+", "+val2+"\n";
+    static void comp_int(String val1, String val2) {
+        buffer += "%" + reg + " = icmp eq i32 " + val1 + ", " + val2 + "\n";
         reg++;
-        buffer += "%"+reg+" = zext i1  %"+(reg-1)+" to i32\n";
+        buffer += "%" + reg + " = zext i1  %" + (reg - 1) + " to i32\n";
         reg++;
     }
 
-    static void comp_float(String val1, String val2, String precision){
+    static void comp_float(String val1, String val2, String precision) {
 
         if (precision.equals("FLOAT32")) {
             float float1Value = Float.parseFloat(val1);
             String formattedValue1 = String.format("%.20f", float1Value).replace(",", ".");
             float float2Value = Float.parseFloat(val2);
             String formattedValue2 = String.format("%.20f", float2Value).replace(",", ".");
-            buffer += "%"+reg+" = fcmp oeq float "+formattedValue1+", "+formattedValue2+"\n";
+            buffer += "%" + reg + " = fcmp oeq float " + formattedValue1 + ", " + formattedValue2 + "\n";
             reg++;
-            buffer += "%"+reg+" = zext i1  %"+(reg-1)+" to i32\n";
+            buffer += "%" + reg + " = zext i1  %" + (reg - 1) + " to i32\n";
             reg++;
-            buffer += "%"+reg+" = sitofp i32  %"+(reg-1)+" to float\n";
+            buffer += "%" + reg + " = sitofp i32  %" + (reg - 1) + " to float\n";
             reg++;
         } else if (precision.equals("FLOAT64")) {
-            buffer += "%"+reg+" = fcmp ueq double "+val1+", "+val2+"\n";
+            buffer += "%" + reg + " = fcmp ueq double " + val1 + ", " + val2 + "\n";
             reg++;
-            buffer += "%"+reg+" = zext i1  %"+(reg-1)+" to i32\n";
+            buffer += "%" + reg + " = zext i1  %" + (reg - 1) + " to i32\n";
             reg++;
-            buffer += "%"+reg+" = sitofp i32  %"+(reg-1)+" to double\n";
+            buffer += "%" + reg + " = sitofp i32  %" + (reg - 1) + " to double\n";
             reg++;
         }
     }
 
-    static void and_int(String val1, String val2){
-        buffer += "%"+reg+" = icmp ne i32 "+val1+", 0\n";
+    static void and_int(String val1, String val2) {
+        buffer += "%" + reg + " = icmp ne i32 " + val1 + ", 0\n";
         reg++;
-        buffer += "%"+reg+" = icmp ne i32 "+val2+", 0\n";
+        buffer += "%" + reg + " = icmp ne i32 " + val2 + ", 0\n";
         reg++;
-        buffer += "%"+reg+" = and i1 %"+(reg-1)+", %"+(reg-2)+"\n";
+        buffer += "%" + reg + " = and i1 %" + (reg - 1) + ", %" + (reg - 2) + "\n";
         reg++;
-        buffer += "%"+reg+" = zext i1  %"+(reg-1)+" to i32\n";
+        buffer += "%" + reg + " = zext i1  %" + (reg - 1) + " to i32\n";
         reg++;
     }
 
     static void or_int(String val1, String val2) {
-        buffer += "%" + reg + " = icmp ne i32 " +val1+ ", 0\n";
+        buffer += "%" + reg + " = icmp ne i32 " + val1 + ", 0\n";
         reg++;
-        buffer += "%" + reg + " = icmp ne i32 " +val2+ ", 0\n";
+        buffer += "%" + reg + " = icmp ne i32 " + val2 + ", 0\n";
         reg++;
-        buffer += "%" + reg + " = or i1 %" + (reg-1) + ", %" + (reg-2) + "\n";
+        buffer += "%" + reg + " = or i1 %" + (reg - 1) + ", %" + (reg - 2) + "\n";
         reg++;
-        buffer += "%" + reg + " = zext i1 %" + (reg-1) + " to i32\n";
+        buffer += "%" + reg + " = zext i1 %" + (reg - 1) + " to i32\n";
         reg++;
     }
 
     static void not_int(String val) {
         buffer += "%" + reg + " = icmp eq i32 " + val + ", 0\n";
         reg++;
-        buffer += "%" + reg + " = xor i1 %" + (reg-1) + ", true\n";
+        buffer += "%" + reg + " = xor i1 %" + (reg - 1) + ", true\n";
         reg++;
-        buffer += "%" + reg + " = select i1 %" + (reg-1) + ", i32 0, i32 1\n";
+        buffer += "%" + reg + " = select i1 %" + (reg - 1) + ", i32 0, i32 1\n";
         reg++;
     }
 
-    static void repeatstart(String repetitions){
+    static void repeatstart(String repetitions) {
         String id = Integer.toString(reg);
-        buffer += "%"+id+" = alloca i32\n";
+        buffer += "%" + id + " = alloca i32\n";
 
         int counter = reg;
         reg++;
 
         id = Integer.toString(counter);
-        buffer += "store i32 "+"0"+", i32* %"+id+"\n";
+        buffer += "store i32 " + "0" + ", i32* %" + id + "\n";
         br++;
 
-        buffer += "br label %cond"+br+"\n";
-        buffer += "cond"+br+":\n";
+        buffer += "br label %cond" + br + "\n";
+        buffer += "cond" + br + ":\n";
 
-        buffer += "%"+reg+" = load i32, i32* %"+id+"\n";
+        buffer += "%" + reg + " = load i32, i32* %" + id + "\n";
         reg++;
 
-        String val1 = "%"+(reg-1);
+        String val1 = "%" + (reg - 1);
         String val2 = "1";
-        buffer += "%"+reg+" = add i32 "+val1+", "+val2+"\n";
+        buffer += "%" + reg + " = add i32 " + val1 + ", " + val2 + "\n";
         reg++;
 
-        String value = "%"+(reg-1);
-        buffer += "store i32 "+value+", i32* %"+id+"\n";
+        String value = "%" + (reg - 1);
+        buffer += "store i32 " + value + ", i32* %" + id + "\n";
 
-        buffer += "%"+reg+" = icmp slt i32 %"+(reg-2)+", "+repetitions+"\n";
+        buffer += "%" + reg + " = icmp slt i32 %" + (reg - 2) + ", " + repetitions + "\n";
         reg++;
 
-        buffer += "br i1 %"+(reg-1)+", label %true"+br+", label %false"+br+"\n";
-        buffer += "true"+br+":\n";
+        buffer += "br i1 %" + (reg - 1) + ", label %true" + br + ", label %false" + br + "\n";
+        buffer += "true" + br + ":\n";
         brstack.push(br);
     }
 
-    static void repeatend(){
+    static void repeatend() {
         int b = brstack.pop();
-        buffer += "br label %cond"+b+"\n";
-        buffer += "false"+b+":\n";
+        buffer += "br label %cond" + b + "\n";
+        buffer += "false" + b + ":\n";
     }
 
-    static void function_start(String id){
+    static void function_start(String id) {
         main_text += buffer;
         main_tmp = reg;
         buffer = "define void @" + id + "() nounwind {\n";
         reg = 1;
     }
 
-    static void function_end(){
+    static void function_end() {
         buffer += "ret void\n";
         formatBuffer();
         buffer += "}\n\n";
@@ -404,11 +403,11 @@ class LLVMGenerator{
         reg = main_tmp;
     }
 
-    static void classFun_start(String name, String type){
+    static void classFun_start(String name, String type) {
         main_text += buffer;
         main_tmp = reg;
         buffer = "define void @" + name + "(%" + type + "* %obj) {\n";
-        buffer += "%objVal = load %"+type+", %"+type+"* %obj\n";
+        buffer += "%objVal = load %" + type + ", %" + type + "* %obj\n";
         reg = 1;
     }
 
@@ -421,17 +420,17 @@ class LLVMGenerator{
         reg = main_tmp;
     }
 
-    static void ifstart(){
+    static void ifstart() {
         br++;
-        buffer += "br i1 %"+(reg-1)+", label %true"+br+", label %false"+br+"\n";
-        buffer += "true"+br+":\n";
+        buffer += "br i1 %" + (reg - 1) + ", label %true" + br + ", label %false" + br + "\n";
+        buffer += "true" + br + ":\n";
         brstack.push(br);
     }
 
-    static void ifend(){
+    static void ifend() {
         int b = brstack.pop();
-        buffer += "br label %false"+b+"\n";
-        buffer += "false"+b+":\n";
+        buffer += "br label %false" + b + "\n";
+        buffer += "false" + b + ":\n";
     }
 
     static void call(String id) {
@@ -439,8 +438,8 @@ class LLVMGenerator{
     }
 
     static void classFunCall(String obj, String funID, String className) {
-        buffer += "%objPtr = bitcast %"+className+"* @"+obj+" to %"+className+"*\n";
-        buffer += "call void @" + funID + "(%"+className+"* %objPtr)" +"\n";
+        buffer += "%objPtr = bitcast %" + className + "* @" + obj + " to %" + className + "*\n";
+        buffer += "call void @" + funID + "(%" + className + "* %objPtr)" + "\n";
     }
 
     private static void formatBuffer() {
@@ -453,7 +452,7 @@ class LLVMGenerator{
         buffer = sb.toString();
     }
 
-    static void close_main(){
+    static void close_main() {
         main_text += buffer;
         formatMainText();
     }
@@ -467,7 +466,7 @@ class LLVMGenerator{
         main_text = sb.toString();
     }
 
-    static String generate(){
+    static String generate() {
         String text = "";
         text += "declare i32 @printf(i8*, ...)\n";
         text += "declare i32 @scanf(i8*, ...)\n";

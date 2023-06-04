@@ -8,22 +8,25 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-enum VarType{ INT, FLOAT }
+enum VarType {INT, FLOAT}
 
-enum Precision{FLOAT32, FLOAT64, DM}
+enum Precision {FLOAT32, FLOAT64, DM}
 
 class Value {
     public String name;
     public VarType type;
     public Precision precision;
-    public Value( String name, VarType type, Precision precision ){
+
+    public Value(String name, VarType type, Precision precision) {
         this.name = name;
         this.type = type;
         this.precision = precision;
     }
+
     public Precision getPrecision() {
         return precision;
     }
+
     public VarType getType() {
         return type;
     }
@@ -33,17 +36,21 @@ class Structure {
     public String name;
     public String type;
     public List<Value> listOFValues;
-    public Structure (String name, String type, List<Value> listOFValues) {
+
+    public Structure(String name, String type, List<Value> listOFValues) {
         this.name = name;
         this.type = type;
         this.listOFValues = listOFValues;
     }
+
     public String getName() {
         return name;
     }
+
     public String getType() {
         return type;
     }
+
     public List<Value> getListOFValues() {
         return listOFValues;
     }
@@ -51,10 +58,12 @@ class Structure {
 
 class Classes extends Structure {
     public List<String> listOfFunctions;
+
     public Classes(String name, String type, List<Value> listOFValues, List<String> listOfFunctions) {
         super(name, type, listOFValues);
         this.listOfFunctions = listOfFunctions;
     }
+
     public List<String> getListOfFunctions() {
         return listOfFunctions;
     }
@@ -80,11 +89,11 @@ public class LLVMActions extends MantricoreBaseListener {
     HashSet<String> functions = new HashSet<String>();
     HashSet<String> localnames = new HashSet<String>();
     HashSet<String> globalnames = new HashSet<String>();
-    String logicalVal,function;
+    String logicalVal, function;
     Boolean global = true;
 
-    void error(int line, String msg){
-        System.err.println("Error, line "+line+", "+msg);
+    void error(int line, String msg) {
+        System.err.println("Error, line " + line + ", " + msg);
         System.exit(1);
     }
 
@@ -137,10 +146,10 @@ public class LLVMActions extends MantricoreBaseListener {
                 LLVMGenerator.printf_float(ID, variables.get(ID).precision.toString(), globalnames);
             } else {
                 ctx.getStart().getLine();
-                System.err.println("Line "+ ctx.getStart().getLine()+", unknown variable: "+ID);
+                System.err.println("Line " + ctx.getStart().getLine() + ", unknown variable: " + ID);
             }
         } else {
-            System.err.println("Line "+ ctx.getStart().getLine()+", unknown variable: "+ID);
+            System.err.println("Line " + ctx.getStart().getLine() + ", unknown variable: " + ID);
         }
     }
 
@@ -156,7 +165,7 @@ public class LLVMActions extends MantricoreBaseListener {
             Structure structure = structures.get(ID);
             LLVMGenerator.print_struc(structure.type, structure.name, structure.listOFValues);
         } else {
-            System.err.println("Line "+ ctx.getStart().getLine()+", unknown structure: "+ID);
+            System.err.println("Line " + ctx.getStart().getLine() + ", unknown structure: " + ID);
         }
 
     }
@@ -165,11 +174,11 @@ public class LLVMActions extends MantricoreBaseListener {
     public void exitReadId(MantricoreParser.ReadIdContext ctx) {
         String ID = ctx.ID().getText();
 
-        if (!( variables.containsKey(ID))){
+        if (!(variables.containsKey(ID))) {
             LLVMGenerator.declare_int(ID, global);
             variables.put(ID, new Value(ID, VarType.INT, Precision.DM));
         } else {
-            if (VarType.FLOAT.equals(variables.get(ID).type)){
+            if (VarType.FLOAT.equals(variables.get(ID).type)) {
                 variables.put(ID, new Value(ID, VarType.INT, Precision.DM));
             }
         }
@@ -198,19 +207,19 @@ public class LLVMActions extends MantricoreBaseListener {
             }
             LLVMGenerator.assign_float(ID, v.name, v.precision.toString(), globalnames);
         } else {
-            System.err.println("Line "+ ctx.getStart().getLine()+", unknown variable: "+ID);
+            System.err.println("Line " + ctx.getStart().getLine() + ", unknown variable: " + ID);
         }
     }
 
     @Override
     public void enterStructure(MantricoreParser.StructureContext ctx) {
-        enteredStuc= true;
+        enteredStuc = true;
     }
 
     @Override
     public void exitStructure(MantricoreParser.StructureContext ctx) {
         String name = ctx.ID().toString();
-        enteredStuc= false;
+        enteredStuc = false;
         List<Value> listOfValues = getValuesFromStrucStack();
         List<String> listOfTypes = listOfValues.stream()
                 .map(Value::getPrecision)
@@ -240,14 +249,14 @@ public class LLVMActions extends MantricoreBaseListener {
 
     @Override
     public void enterStrucAssign(MantricoreParser.StrucAssignContext ctx) {
-        enteredStuc= true;
+        enteredStuc = true;
     }
 
     @Override
     public void exitStrucAssign(MantricoreParser.StrucAssignContext ctx) {
         String name = ctx.ID(1).toString();
         String type = ctx.ID(0).toString();
-        enteredStuc= false;
+        enteredStuc = false;
         List<Value> listOfValues = getValuesFromStrucStack();
         if (structuresDeclaration.containsKey(type)) {
             List<Value> listOfTypes = structuresDeclaration.get(type);
@@ -267,13 +276,13 @@ public class LLVMActions extends MantricoreBaseListener {
 
     @Override
     public void enterClassDeclaration(MantricoreParser.ClassDeclarationContext ctx) {
-        enteredStuc= true;
+        enteredStuc = true;
     }
 
     @Override
     public void exitClassDeclaration(MantricoreParser.ClassDeclarationContext ctx) {
         String name = ctx.ID().toString();
-        enteredStuc= false;
+        enteredStuc = false;
         List<Value> listOfValues = getValuesFromStrucStack();
         List<String> listOfTypes = listOfValues.stream()
                 .map(Value::getPrecision)
@@ -294,14 +303,14 @@ public class LLVMActions extends MantricoreBaseListener {
 
     @Override
     public void enterClassAssign(MantricoreParser.ClassAssignContext ctx) {
-        enteredStuc= true;
+        enteredStuc = true;
     }
 
     @Override
     public void exitClassAssign(MantricoreParser.ClassAssignContext ctx) {
         String name = ctx.ID(1).toString();
         String type = ctx.ID(0).toString();
-        enteredStuc= false;
+        enteredStuc = false;
         List<Value> listOfValues = getValuesFromStrucStack();
         if (classDeclaration.containsKey(type)) {
             List<Value> listOfTypes = classDeclaration.get(type);
@@ -351,7 +360,7 @@ public class LLVMActions extends MantricoreBaseListener {
         Value v1 = stack.pop();
         if (VarType.INT.equals(v1.type)) {
             LLVMGenerator.not_int(v1.name);
-            stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.INT, Precision.DM));
         } else {
             error(ctx.getStart().getLine(), "and operattion type not handled.");
         }
@@ -363,7 +372,7 @@ public class LLVMActions extends MantricoreBaseListener {
         Value v2 = stack.pop();
         if (VarType.INT.equals(v1.type)) {
             LLVMGenerator.or_int(v1.name, v2.name);
-            stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.INT, Precision.DM));
         } else {
             error(ctx.getStart().getLine(), "or operattion type not handled.");
         }
@@ -375,7 +384,7 @@ public class LLVMActions extends MantricoreBaseListener {
         Value v2 = stack.pop();
         if (VarType.INT.equals(v1.type)) {
             LLVMGenerator.and_int(v1.name, v2.name);
-            stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.INT, Precision.DM));
         } else {
             error(ctx.getStart().getLine(), "and operattion type not handled.");
         }
@@ -391,19 +400,19 @@ public class LLVMActions extends MantricoreBaseListener {
         Value v1 = stack.pop();
         Value v2 = stack.pop();
 
-        if( v1.type == v2.type && v1.precision == v2.precision ) {
+        if (v1.type == v2.type && v1.precision == v2.precision) {
             if (v1.name.startsWith("arg")) {
                 LLVMGenerator.add_args(v1.name, v2.name, className);
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.INT, Precision.DM));
                 return;
             }
-            if (v1.type == VarType.INT ) {
+            if (v1.type == VarType.INT) {
                 LLVMGenerator.add_int(v1.name, v2.name);
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.INT, Precision.DM));
             }
-            if (v1.type == VarType.FLOAT ) {
+            if (v1.type == VarType.FLOAT) {
                 LLVMGenerator.add_float(v1.name, v2.name, v1.precision.toString());
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.FLOAT, v1.precision) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.FLOAT, v1.precision));
             }
         } else {
             error(ctx.getStart().getLine(), "add operattion type mismatch.");
@@ -415,14 +424,14 @@ public class LLVMActions extends MantricoreBaseListener {
         Value v1 = stack.pop();
         Value v2 = stack.pop();
 
-        if( v1.type == v2.type && v1.precision == v2.precision ) {
-            if( v1.type == VarType.INT ){
+        if (v1.type == v2.type && v1.precision == v2.precision) {
+            if (v1.type == VarType.INT) {
                 LLVMGenerator.sub_int(v1.name, v2.name);
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.INT, Precision.DM));
             }
-            if( v1.type == VarType.FLOAT ){
+            if (v1.type == VarType.FLOAT) {
                 LLVMGenerator.sub_float(v1.name, v2.name, v1.precision.toString());
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.FLOAT, v1.precision) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.FLOAT, v1.precision));
             }
         } else {
             error(ctx.getStart().getLine(), "add operattion type mismatch.");
@@ -440,19 +449,20 @@ public class LLVMActions extends MantricoreBaseListener {
             stack.push(new Value(ctx.value().getText(), VarType.INT, Precision.DM));
         }
     }
+
     @Override
     public void exitDiv(MantricoreParser.DivContext ctx) {
         Value v1 = stack.pop();
         Value v2 = stack.pop();
 
-        if( v1.type == v2.type && v1.precision == v2.precision ) {
-            if( v1.type == VarType.INT ){
+        if (v1.type == v2.type && v1.precision == v2.precision) {
+            if (v1.type == VarType.INT) {
                 LLVMGenerator.div_int(v1.name, v2.name);
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.INT, Precision.DM));
             }
-            if( v1.type == VarType.FLOAT ){
+            if (v1.type == VarType.FLOAT) {
                 LLVMGenerator.div_float(v1.name, v2.name, v1.precision.toString());
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.FLOAT, v1.precision) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.FLOAT, v1.precision));
             }
         } else {
             error(ctx.getStart().getLine(), "add operattion type mismatch.");
@@ -464,14 +474,14 @@ public class LLVMActions extends MantricoreBaseListener {
         Value v1 = stack.pop();
         Value v2 = stack.pop();
 
-        if( v1.type == v2.type && v1.precision == v2.precision ) {
-            if( v1.type == VarType.INT ){
+        if (v1.type == v2.type && v1.precision == v2.precision) {
+            if (v1.type == VarType.INT) {
                 LLVMGenerator.mult_int(v1.name, v2.name);
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.INT, Precision.DM));
             }
-            if( v1.type == VarType.FLOAT ){
+            if (v1.type == VarType.FLOAT) {
                 LLVMGenerator.mult_float(v1.name, v2.name, v1.precision.toString());
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.FLOAT, v1.precision) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.FLOAT, v1.precision));
             }
         } else {
             error(ctx.getStart().getLine(), "add operattion type mismatch.");
@@ -483,14 +493,14 @@ public class LLVMActions extends MantricoreBaseListener {
         Value v1 = stack.pop();
         Value v2 = stack.pop();
 
-        if( v1.type == v2.type && v1.precision == v2.precision ) {
-            if( v1.type == VarType.INT ){
+        if (v1.type == v2.type && v1.precision == v2.precision) {
+            if (v1.type == VarType.INT) {
                 LLVMGenerator.comp_int(v1.name, v2.name);
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.INT, Precision.DM) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.INT, Precision.DM));
             }
-            if( v1.type == VarType.FLOAT ){
+            if (v1.type == VarType.FLOAT) {
                 LLVMGenerator.comp_float(v1.name, v2.name, v1.precision.toString());
-                stack.push( new Value("%"+(LLVMGenerator.reg-1), VarType.FLOAT, v1.precision) );
+                stack.push(new Value("%" + (LLVMGenerator.reg - 1), VarType.FLOAT, v1.precision));
             }
         } else {
             error(ctx.getStart().getLine(), "add operattion type mismatch.");
@@ -511,7 +521,7 @@ public class LLVMActions extends MantricoreBaseListener {
         if (VarType.FLOAT.equals(type)) {
             precision = ctx.NUMBER().getText().contains("f") ? Precision.FLOAT32 : Precision.FLOAT64;
         }
-        stack.push( new Value(ctx.NUMBER().getText(), type, precision) );
+        stack.push(new Value(ctx.NUMBER().getText(), type, precision));
     }
 
 
