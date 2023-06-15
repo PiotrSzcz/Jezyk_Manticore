@@ -1,5 +1,9 @@
 x =10
 
+struc test { 1 1.1 1.1 1 1}
+test mystruc { 2 2.2 2.2 2 2}
+print(struc mystruc)
+
 class Myclass { 1 2 }
 Myclass classExample class { 3 4 }
 
@@ -18,4 +22,9 @@ fthis fooo(Myclasss) {
 
 classExample foo()
 classExamplee fooo()
-print(x)
+whatif(1-1+2==2){
+    print(x)
+}
+repeat(1+5-2){
+    print(x)
+}
